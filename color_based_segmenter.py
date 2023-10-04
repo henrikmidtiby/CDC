@@ -69,6 +69,25 @@ def read_tile(orthomosaic, tile):
         im = src.read(window=window)
     return rasterio_opencv2(im)
 
+class colorspace:
+    def __init__(self):
+        self.colorspace = "bgr"
+
+    def to_hsv(self, reference_img):
+        return cv2.cvtColor(reference_img, cv2.COLOR_BGR2HSV)
+
+    def to_lab(self, reference_img):
+        return cv2.cvtColor(reference_img, cv2.COLOR_BGR2Lab)
+
+    def convert_to_selected_colorspace(self, image):
+        if self.colorspace == "bgr":
+            return image
+        elif self.colorspace == "hsv":
+            return self.to_hsv(image)
+        elif self.colorspace == "lab":
+            return self.to_lab(image)
+        else:
+            raise Exception("Not a supported colorspace")
 
 class ReferencePixels:
     def __init__(self):
@@ -76,13 +95,14 @@ class ReferencePixels:
         self.annotated_image = None
         self.pixel_mask = None
         self.values = None
+        self.colorspace = colorspace()
 
     def load_reference_image(self, filename_reference_image):
-        self.reference_image = cv2.imread(filename_reference_image)
-
+        self.reference_image = self.colorspace.convert_to_selected_colorspace(cv2.imread(filename_reference_image))
+        
     def load_annotated_image(self, filename_annotated_image):
         self.annotated_image = cv2.imread(filename_annotated_image)
-
+        
     def generate_pixel_mask(self,
                             lower_range=(0, 0, 245),
                             higher_range=(10, 10, 256)):
@@ -104,8 +124,12 @@ class ReferencePixels:
                    self.values.transpose(), 
                    delimiter = '\t', 
                    fmt='%i', 
-                   header="b\tg\tr", 
+                   header = self.colorspace.colorspace[0] + "\t" 
+                   + self.colorspace.colorspace[1] + "\t" 
+                   + self.colorspace.colorspace[2],
                    comments = "")
+        
+        
 
 
 class MahalanobisDistance:
@@ -185,6 +209,8 @@ class ColorBasedSegmenter:
         self.output_scale_factor = None
         self.output_tile_location = None
         self.input_tile_location = None
+        self.process_tiles = 0
+        self.pixel_mask_file = "pixel_values"
 
     def main(self, filename_orthomosaic):
         output_directory = os.path.dirname(self.output_tile_location)
@@ -192,7 +218,8 @@ class ColorBasedSegmenter:
             os.makedirs(output_directory)
         self.initialize_color_model(self.ref_image_filename,
                                     self.ref_image_annotated_filename)
-        self.process_orthomosaic(filename_orthomosaic)
+        if self.process_tiles:
+            self.process_orthomosaic(filename_orthomosaic)
 
     def initialize_color_model(self,
                                ref_image_filename,
@@ -201,7 +228,7 @@ class ColorBasedSegmenter:
         self.reference_pixels.load_annotated_image(ref_image_annotated_filename)
         self.reference_pixels.generate_pixel_mask()
         self.reference_pixels.show_statistics_of_pixel_mask()
-        self.reference_pixels.save_pixel_values_to_file("pixel_values.csv")
+        self.reference_pixels.save_pixel_values_to_file(self.pixel_mask_file + ".csv")
         self.colormodel.calculate_statistics(self.reference_pixels.values)
         self.colormodel.show_statistics()
 
@@ -260,11 +287,11 @@ class ColorBasedSegmenter:
                                                      self.tile_size)
 
         for tile_number, tile in enumerate(tqdm(processing_tiles)):
-            img_rgb = read_tile(filename_orthomosaic, tile)
-            if self.is_image_empty(img_rgb):
+            img = self.reference_pixels.colorspace.convert_to_selected_colorspace(read_tile(filename_orthomosaic, tile))
+            if self.is_image_empty(img):
                 continue
 
-            self.process_tile(filename_orthomosaic, img_rgb, tile_number, tile)
+            self.process_tile(filename_orthomosaic, img, tile_number, tile)
 
     def get_processing_tiles(self, filename_orthomosaic, tile_size):
         """
@@ -408,10 +435,26 @@ parser.add_argument('--param',
                     help='Numerical parameter for the color model. '
                          'When using the \'gmm\' method, this equals the '
                          'number of components in the Gaussian Mixture Model.')
+parser.add_argument('--colorspace',
+                    default='bgr',
+                    help='Defines which colorspace will be used to find specific '
+                         'colors in an orthomosaic. \n'
+                         'Default is bgr(rgb), but cielab can be choosen with lab '
+                         'and HSV can be choosen with hsv')
+parser.add_argument('--process_tiles',
+                    default=0,
+                    help='Defaults to 0 which means that the tiles are not '
+                         'processed, but a .csv file with the mask pixels is '
+                         'returned')
+parser.add_argument('--mask_file_name',
+                    default= "pixel_values",
+                    help='Change the name in which the pixel mask is saved. It '
+                         'defaults to pixel_values (.csv is automatically added)')
 args = parser.parse_args()
 
 
 cbs = ColorBasedSegmenter()
+ic(args.method)
 if args.method == 'gmm':
     cbs.colormodel = GaussianMixtureModelDistance(args.param)
 cbs.ref_image_filename = args.reference
@@ -420,4 +463,7 @@ cbs.output_scale_factor = args.scale
 cbs.tile_size = args.tile_size
 cbs.output_tile_location = args.output_tile_location
 cbs.input_tile_location = args.input_tile_location
+cbs.reference_pixels.colorspace.colorspace = args.colorspace
+cbs.process_tiles = args.process_tiles
+cbs.pixel_mask_file = args.mask_file_name 
 cbs.main(args.orthomosaic)
