@@ -39,9 +39,12 @@ from icecream import ic
 import argparse
 from tqdm import tqdm
 from sklearn import mixture
+import concurrent.futures
+
+from convert_orthomosaic_to_list_of_tiles import convert_orthomosaic_to_list_of_tiles
 
 
-class Tile:
+class Tile_old:
     def __init__(self, start_point, position, height, width):
         self.size = (height, width)
         self.tile_position = position
@@ -130,8 +133,6 @@ class ReferencePixels:
                    comments = "")
         
         
-
-
 class MahalanobisDistance:
     """
     A multivariate normal distribution used to describe the color of a set of
@@ -390,6 +391,61 @@ class ColorBasedSegmenter:
             new_dataset.write(temp_to_save)
             new_dataset.close()
 
+class ColorBasedSegmenter2:
+    def __init__(self):
+        self.output_tile_location = None
+        self.reference_pixels = ReferencePixels()
+        self.colormodel = MahalanobisDistance()
+        self.ref_image_filename = None
+        self.ref_image_annotated_filename = None
+        self.output_scale_factor = None
+        self.pixel_mask_file = "pixel_values"
+
+    def main(self, tile_list):
+        self.initialize_color_model(self.ref_image_filename,
+                                    self.ref_image_annotated_filename)
+        start = time.time()
+        for tile in tqdm(tile_list):
+            img = self.reference_pixels.colorspace.convert_to_selected_colorspace(tile.img)
+            if self.is_image_empty(img):
+                continue
+            self.process_tile(tile)
+        print("Time to run all tiles: ", time.time() - start)
+        """start = time.time()
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            executor.map(self.process_tile, tile_list)
+        print("Time to run all tiles: ", time.time() - start)"""
+    
+    def is_image_empty(self, image):
+        """Helper function for deciding if an image contains no data."""
+        return np.max(image[:, :, 0]) == np.min(image[:, :, 0])
+    
+    def ensure_parent_directory_exist(self, path):
+        if not os.path.isdir(path):
+            os.makedirs(path)
+
+    def initialize_color_model(self,
+                               ref_image_filename,
+                               ref_image_annotated_filename):
+        self.reference_pixels.load_reference_image(ref_image_filename)
+        self.reference_pixels.load_annotated_image(ref_image_annotated_filename)
+        self.reference_pixels.generate_pixel_mask()
+        self.reference_pixels.show_statistics_of_pixel_mask()
+        self.ensure_parent_directory_exist(self.output_tile_location)
+        self.reference_pixels.save_pixel_values_to_file(self.output_tile_location + "/" + self.pixel_mask_file + ".csv")
+        self.colormodel.calculate_statistics(self.reference_pixels.values)
+        self.colormodel.show_statistics()
+
+    def process_tile(self, tile):
+        if not self.is_image_empty(tile.img):
+            distance_image = self.colormodel.calculate_distance(tile.img[:, :, :])
+            distance = cv2.convertScaleAbs(distance_image,
+                                        alpha=self.output_scale_factor,
+                                        beta=0)
+            distance = distance.astype(np.uint8)
+            tile.img = distance
+            tile.save_tile()
+
 
 parser = argparse.ArgumentParser(
           prog='ColorDistranceCalculatorForOrthomosaics',
@@ -413,6 +469,7 @@ parser.add_argument('--scale',
                          'Default value is 5.')
 parser.add_argument('--tile_size',
                     default=3000,
+                    type=int,
                     help='The height and width of tiles that are analyzed. '
                          'Default is 3000.')
 parser.add_argument('--output_tile_location', 
@@ -441,11 +498,11 @@ parser.add_argument('--colorspace',
                          'colors in an orthomosaic. \n'
                          'Default is bgr(rgb), but cielab can be choosen with lab '
                          'and HSV can be choosen with hsv')
-parser.add_argument('--process_tiles',
+"""parser.add_argument('--process_tiles',
                     default=0,
                     help='Defaults to 0 which means that the tiles are not '
                          'processed, but a .csv file with the mask pixels is '
-                         'returned')
+                         'returned')"""
 parser.add_argument('--mask_file_name',
                     default= "pixel_values",
                     help='Change the name in which the pixel mask is saved. It '
@@ -453,7 +510,30 @@ parser.add_argument('--mask_file_name',
 args = parser.parse_args()
 
 
-cbs = ColorBasedSegmenter()
+# Initialize the tile separator
+tsr = convert_orthomosaic_to_list_of_tiles()
+#tsr.run_specific_tile = args.run_specific_tile
+#tsr.run_specific_tileset = args.run_specific_tileset
+tsr.tile_size = args.tile_size
+tsr.output_tile_location = args.output_tile_location
+tile_list = tsr.main(args.orthomosaic)
+
+cbs = ColorBasedSegmenter2()
+if args.method == 'gmm':
+    cbs.colormodel = GaussianMixtureModelDistance(args.param)
+cbs.output_tile_location = args.output_tile_location
+cbs.ref_image_filename = args.reference
+cbs.ref_image_annotated_filename = args.annotated
+cbs.output_scale_factor = args.scale
+cbs.pixel_mask_file = args.mask_file_name 
+cbs.reference_pixels.colorspace.colorspace = args.colorspace
+cbs.main(tile_list)
+
+
+
+#python3 color_based_segmenter.py Tests/rødsvingel/input_data/2023-04-03_Rødsvingel_1._års_Wagner_JSJ_2_ORTHO.tif Tests/rødsvingel/input_data/original.png Tests/rødsvingel/input_data/annotated.png --output_tile_location Tests/rødsvingel/tiles --tile_size 500
+
+"""cbs = ColorBasedSegmenter()
 ic(args.method)
 if args.method == 'gmm':
     cbs.colormodel = GaussianMixtureModelDistance(args.param)
@@ -466,4 +546,4 @@ cbs.input_tile_location = args.input_tile_location
 cbs.reference_pixels.colorspace.colorspace = args.colorspace
 cbs.process_tiles = args.process_tiles
 cbs.pixel_mask_file = args.mask_file_name 
-cbs.main(args.orthomosaic)
+cbs.main(args.orthomosaic)"""
