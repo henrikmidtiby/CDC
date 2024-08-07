@@ -1,0 +1,2 @@
+# Color_Based_Imagesegmentation
+Statistical pixel based Imagesegmentation
