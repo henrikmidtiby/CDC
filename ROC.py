@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import mplcursors
 
 class ROC:
@@ -14,9 +14,10 @@ class ROC:
         self.precission=None 
 
 
-
+# arguments must be numpy arrays
     def get_points(self,analysed_image,test_positive,test_negative,number_of_samples,model=None):
-        if model==None:
+        """ """
+        if model is None:
             def model(value):
                 return value
         

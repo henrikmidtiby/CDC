@@ -1,13 +1,5 @@
 #For adding functionality to make transformation between different colorspaces 
 
-
-
-
-
-
-
-
-
 def transform_image(img,transform=None,):
     if transform== None:
         return img

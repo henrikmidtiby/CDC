@@ -1,14 +1,8 @@
-
-import numpy as np
-import rasterio
-from rasterio.windows import Window
-from rasterio.transform import Affine
-import time
 import os
-from icecream import ic
+import time
 import argparse
+import numpy as np
 from tqdm import tqdm
-from sklearn import mixture
 
 
 import colormodels
@@ -47,10 +41,6 @@ class ColorBasedSegmenter:
                 continue
             self.process_tile(tile)
         print("Time to run all tiles: ", time.time() - start)
-        """start = time.time()
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            executor.map(self.process_tile, tile_list)
-        print("Time to run all tiles: ", time.time() - start)"""
     
    # def apply_threshold_to_image(threshhold,img):
     def apply_colormodel_to_single_tile(self, tile):
@@ -62,10 +52,6 @@ class ColorBasedSegmenter:
     
         self.process_tile(tile)
         print("Time to run all tiles: ", time.time() - start)
-        """start = time.time()
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            executor.map(self.process_tile, tile_list)
-        print("Time to run all tiles: ", time.time() - start)"""
        
 
 
@@ -100,7 +86,7 @@ class ColorBasedSegmenter:
 
 
 def main(args):    
-    referencepixels=colormodels.get_referencepixels(args.reference,args.mask,args.bands_to_use,args.ref_pixel_filename)
+    referencepixels=colormodels.get_referencepixels(args.reference,args.mask,args.bands_to_use,args.ref_pixel_filename,args.referencepixel_method)
     colormodel=colormodels.initialize_colormodel(referencepixels,args.method)
     cbs = ColorBasedSegmenter()
     cbs.initialize_segmenter(args.output_tile_location,colormodel,args.scale)
@@ -184,6 +170,9 @@ parser.add_argument('--param',
 parser.add_argument( '--notiling',
                     action="store_true",
                     help='Options for choosing not to seperate orthomosaic into tiles')
+parser.add_argument( '--ref_method',
+                    default=None,
+                    help='Method for generating Reference pixels, default is from Mask( .tiff file), other option is red anotated jpg file.')
 args = parser.parse_args()
 
 

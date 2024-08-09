@@ -2,6 +2,7 @@
 import numpy as np
 import rasterio
 from sklearn import mixture
+import cv2
 
 
 
@@ -55,13 +56,78 @@ class ReferencePixels:
                    header="b\tg\tr", 
                    comments = "")
 
-def get_referencepixels(ref_img,mask,bands_to_use,filename):
-    reference_pixels=ReferencePixels()
-    reference_pixels.load_reference_image(ref_img)
-    reference_pixels.load_mask(mask)
-    reference_pixels.generate_pixels_from_mask(bands_to_use)
-    reference_pixels.save_pixel_values_to_file(filename)
 
+
+class ReferencePixels_jpg:
+    def __init__(self):
+        self.reference_image = None
+        self.annotated_image = None
+        self.pixel_mask = None
+        self.bands_to_use=None
+        self.values = None
+        #self.colorspace = colorspace()
+
+    def load_reference_image(self, filename_reference_image):
+        self.reference_image = cv2.imread(filename_reference_image)
+        
+    def load_annotated_image(self, filename_annotated_image):
+        self.annotated_image = cv2.imread(filename_annotated_image)
+        
+    def generate_pixel_mask(self,bands_to_use,
+                            lower_range=(0, 0, 245),
+                            higher_range=(10, 10, 256)):
+
+    
+        if bands_to_use is None:
+            self.bands_to_use=list(range(3))
+        else:
+            self.bands_to_use = bands_to_use
+        
+
+        self.pixel_mask = cv2.inRange(self.annotated_image,
+                                      lower_range,
+                                      higher_range)
+        pixels = np.reshape(self.reference_image[:,:,self.bands_to_use],(-1,len(self.bands_to_use)))
+        mask_pixels = np.reshape(self.pixel_mask, (-1))
+        self.values = pixels[mask_pixels == 255, ].transpose()
+
+    def show_statistics_of_pixel_mask(self):
+        print(f"Number of annotated pixels: { self.values.shape }")
+        if self.values.shape[1] < 100:
+            raise Exception("Not enough annotated pixels")
+
+    def save_pixel_values_to_file(self, filename):
+        print(f"Writing pixel values to the file \"{ filename }\"")
+        np.savetxt(filename, 
+                   self.values.transpose(), 
+                   delimiter = '\t', 
+                   fmt='%i', 
+                   header = self.colorspace.colorspace[0] + "\t" 
+                   + self.colorspace.colorspace[1] + "\t" 
+                   + self.colorspace.colorspace[2],
+                   comments = "")
+
+
+
+
+
+def get_referencepixels(ref_img,mask,bands_to_use,filename,method=None):
+    match method:
+        case None :
+            reference_pixels=ReferencePixels()
+            reference_pixels.load_reference_image(ref_img)
+            reference_pixels.load_mask(mask)
+            reference_pixels.generate_pixels_from_mask(bands_to_use)
+            reference_pixels.save_pixel_values_to_file(filename)
+        case 'jpg':
+            reference_pixels=ReferencePixels_jpg()
+            reference_pixels.load_reference_image(ref_img)
+            reference_pixels.load_annotated_image(mask)
+            reference_pixels.generate_pixel_mask(bands_to_use)
+            reference_pixels.save_pixel_values_to_file(filename)
+        case _:
+            raise Exception(print('Not viable method for generating Reference pixels'))
+        
     return reference_pixels
     
 
