@@ -1,7 +1,7 @@
 # %%
-import sys
-sys.path.append('/home/soiv/Dropbox/VScode/Research assistant SDU/Gitlab_SDU/color-based-imagesegmentation/Segmenter')
-import Segmenter.ROC as ROC
+#import sys
+#sys.path.append('/home/soiv/Dropbox/VScode/Research assistant SDU/Gitlab_SDU/color-based-imagesegmentation/Segmenter')
+import ROC.ROC as ROC
 import rasterio
 
 
@@ -33,8 +33,9 @@ roc=ROC.ROC()
 roc.distance_to_points(segmented_img,true_positive,true_negative)
 roc.calculate_rates()
 area=roc.calculate_area_under_graph()
-roc.plot_ROC()#options='precission')
 print(area)
+roc.plot_ROC()#options='precission')
+
 
 
 
