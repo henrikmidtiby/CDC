@@ -1,0 +1,1 @@
+001_segment small image: python3 segmenter.py '/home/soiv/Dropbox/VScode/Research assistant SDU/Gitlab_SDU/Data/ROC_cutout_møn_mark3.tif' '/home/soiv/Dropbox/VScode/Research assistant SDU/Gitlab_SDU/Data/Reference_møn_mark3.tif' '/home/soiv/Dropbox/VScode/Research assistant SDU/Gitlab_SDU/Data/reference_mask_møn_mark3.tif' --notiling
