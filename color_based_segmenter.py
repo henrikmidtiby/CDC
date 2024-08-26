@@ -40,6 +40,7 @@ import argparse
 from tqdm import tqdm
 from sklearn import mixture
 import concurrent.futures
+import matplotlib.pyplot as plt
 
 from convert_orthomosaic_to_list_of_tiles import convert_orthomosaic_to_list_of_tiles
 
@@ -401,20 +402,23 @@ class ColorBasedSegmenter2:
         self.output_scale_factor = None
         self.pixel_mask_file = "pixel_values"
 
+        self.image_statistics = np.zeros(256)
+
     def main(self, tile_list):
         self.initialize_color_model(self.ref_image_filename,
                                     self.ref_image_annotated_filename)
         start = time.time()
         for tile in tqdm(tile_list):
-            img = self.reference_pixels.colorspace.convert_to_selected_colorspace(tile.img)
-            if self.is_image_empty(img):
-                continue
+            tile.img = self.reference_pixels.colorspace.convert_to_selected_colorspace(tile.img)
             self.process_tile(tile)
         print("Time to run all tiles: ", time.time() - start)
         """start = time.time()
         with concurrent.futures.ProcessPoolExecutor() as executor:
             executor.map(self.process_tile, tile_list)
         print("Time to run all tiles: ", time.time() - start)"""
+        self.calculate_statistics(tile_list)
+        self.save_statistics()
+        
     
     def is_image_empty(self, image):
         """Helper function for deciding if an image contains no data."""
@@ -445,6 +449,67 @@ class ColorBasedSegmenter2:
             distance = distance.astype(np.uint8)
             tile.img = distance
             tile.save_tile()
+    
+    def calculate_statistics(self, tile_list):
+        null_dist = self.colormodel.calculate_distance(np.ones((1, 1, 3))*255)[0][0]
+        for tile in tile_list:
+            if not np.max(tile.img[:, :]) == np.min(tile.img[:, :]):
+                image_statistics = np.histogram(tile.img, bins=256, range=(0, 255))[0]
+
+                # Empty pixel are not counted in the histogram. 
+                # Unwanted side effect is that pixels with a similar distance will also be discarded.
+                image_statistics[int(null_dist*self.output_scale_factor)] = 0
+                self.image_statistics += image_statistics
+        mean_divide = 0
+        mean_sum = 0
+        for x in range(0, 256):
+            mean_sum += self.image_statistics[x] * x
+            mean_divide += self.image_statistics[x]
+        
+        
+        ic(null_dist)
+        self.mean_pixel_value = mean_sum / mean_divide
+        
+        
+    def save_statistics(self):
+        statistics_path = self.output_tile_location + "/statistics"
+        self.ensure_parent_directory_exist(statistics_path)
+
+        print(f"Writing statistics to the folder \"{ statistics_path }\"")
+
+        # Plot histogram of pixel valuess
+        plt.plot(self.image_statistics)
+        plt.title("Histogram of pixel values")
+        plt.xlabel("Pixel Value")
+        plt.ylabel("Number of Pixels")
+        plt.savefig(statistics_path + "/Histogram of pixel values", dpi=300)
+        plt.close()
+
+        f = open(statistics_path + "/output_file.txt", "w")
+        f.write("Input parameters:\n")
+        f.write(f" - Orthomosaic: {args.orthomosaic}\n")
+        f.write(f" - Reference image: {args.reference}\n")
+        f.write(f" - Annotated image: {args.annotated}\n")
+        f.write(f" - Output scale factor: {args.scale}\n")
+        f.write(f" - Tile sizes: {args.tile_size}\n")
+        f.write(f" - Output tile location: {args.output_tile_location}\n")
+        f.write(f" - Method: {args.method}\n")
+        f.write(f" - Parameter: {args.param}\n")
+        f.write(f" - Colorspace: {args.colorspace}\n")
+        f.write(f" - Pixel mask file: {args.mask_file_name}\n")
+
+        f.write("\n\nOutput from run\n")
+        f.write(" - Average color value of annotated pixels\n")
+        f.write(f" - {self.colormodel.average}\n")
+        f.write(" - Covariance matrix of the annotated pixels\n")
+        f.write(" - " + str(self.colormodel.covariance).replace('\n', '\n   ') + "\n")
+        
+        f.write(f" - Mean pixel value: {self.mean_pixel_value}\n")
+
+        f.write(f" - Number of tiles: {len(tile_list)}\n")
+        
+        f.close()
+    
 
 
 parser = argparse.ArgumentParser(
