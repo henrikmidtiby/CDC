@@ -102,6 +102,7 @@ class ReferencePixels:
     def generate_pixel_mask(self,
                             lower_range=(0, 0, 245),
                             higher_range=(10, 10, 256)):
+        ic(self.annotated_image)
         self.pixel_mask = cv2.inRange(self.annotated_image,
                                       lower_range,
                                       higher_range)
