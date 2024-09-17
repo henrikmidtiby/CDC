@@ -6,7 +6,7 @@ import argparse
 
 def segment_orthomosaic(args):    
     referencepixels=colormodels.get_referencepixels(args.reference,args.mask,args.bands_to_use,args.ref_pixel_filename,args.ref_method)
-    colormodel=colormodels.initialize_colormodel(referencepixels,args.method)
+    colormodel=colormodels.initialize_colormodel(referencepixels,args.method,args.param)
     cbs = segmenter.ColorBasedSegmenter()
     cbs.initialize_segmenter(args.output_tile_location,colormodel,args.scale)
     if args.notiling==False:
