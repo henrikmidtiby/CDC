@@ -8,10 +8,17 @@ import threading
 import argparse
 
 class RasterAnnotator:
-    def __init__(self, raster_file):
+    def __init__(self, raster_file,alphachannel=True):
         self.raster_file = raster_file
         self.dataset = rasterio.open(raster_file)
-        self.bands = self.dataset.count
+        match alphachannel:
+            case True: 
+                self.bands = self.dataset.count-1
+            case False:
+                self.bands=self.dataset.count
+            case _:
+                self.bands=self.dataset.count
+        
         self.selected_bands = np.ones(self.bands, dtype=bool)  # Initially all bands are selected
         self.fig, self.ax = plt.subplots()
         self.annotated_mask = None

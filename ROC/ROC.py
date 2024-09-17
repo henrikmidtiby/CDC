@@ -11,9 +11,9 @@ class ROC:
         self.thresholds=[]
         self.true_positives_rate=None
         self.false_positives_rate=None
-        self.precission=None 
+        self.precision=None 
 
-
+    
 # arguments must be numpy arrays
     def get_points(self,analysed_image,test_positive,test_negative,number_of_samples,model=None):
         """ """
@@ -61,12 +61,11 @@ class ROC:
         
         positive_distances=np.sort(distances[positive_mask>=200])
         negative_distances=np.sort(distances[negative_mask>=200])
-        
+        print(positive_distances)
         i=0
         n=0
         while(i<len(positive_distances)):
             threshhold=positive_distances[i]
-            
 
             if threshhold < negative_distances[n]:
                 true_pos=i+1
@@ -116,7 +115,7 @@ class ROC:
     def calculate_rates(self):
         self.true_positives_rate = np.divide(self.true_positive , ( np.add(self.true_positive , self.false_negative )))
         self.false_positives_rate= np.divide(self.false_positive , ( np.add(self.false_positive , self.true_negative )))
-        self.precission = np.divide( self.true_positive , ( np.add(self.true_positive , self.false_positive )))
+        self.precision = np.divide( self.true_positive , ( np.add(self.true_positive , self.false_positive )))
         return 1
     
     def calculate_area_under_graph(self):
@@ -125,14 +124,18 @@ class ROC:
            area += ( self.true_positives_rate[i] + self.true_positives_rate[i+1] ) / 2 * ( self.false_positives_rate[i+1] - self.false_positives_rate[i] ) 
         return area
 
-    def plot_ROC(self,options=None):
+    def plot_ROC(self,options):
         match options:
             case None | 'FPR':
                 x=self.false_positives_rate
                 x_label='False Positive Rate'
-            case 'precission':
-                x=self.precission
-                x_label='Precission'
+                y=self.true_positives_rate
+                y_label='True Positive Rate'
+            case 'precision':
+                x=self.true_positives_rate
+                x_label='True Positive Rate'
+                y=self.precision
+                y_label='Precision'
             case _:
                 print('Option used didnt match any implemented option for x axis value, False Positive Rate was used')
                 x=self.false_positives_rate
@@ -148,7 +151,7 @@ class ROC:
         plt.ylim(0,1)
         plt.title("ROC Curve")
         plt.xlabel(x_label)
-        plt.ylabel("True Positives")
+        plt.ylabel(y_label)
 
         cursor = mplcursors.cursor(sc, hover=True)
 

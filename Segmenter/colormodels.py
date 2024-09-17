@@ -7,6 +7,7 @@ import cv2
 
 
 
+
 #Structure for gathering information needed for colormodels
 
 
@@ -152,6 +153,10 @@ class MahalanobisDistance:
     def calculate_statistics(self, reference_pixels):
         self.covariance = np.cov(reference_pixels)
         self.average = np.average(reference_pixels, axis=1)
+       
+        if self.covariance.shape is ():
+            self.covariance=np.reshape(self.covariance,(1,1))
+
         
 
     def calculate_distance(self, image):
@@ -186,11 +191,17 @@ class GaussianMixtureModelDistance:
         self.gmm = None
         self.n_components = n_components
         self.bands_to_use=None
+        self.globalmin=None
+
+        self.minimum_is_not_at_mean=False
 
     def calculate_statistics(self, reference_pixels):
         self.gmm = mixture.GaussianMixture(n_components=self.n_components,
                                            covariance_type="full")
         self.gmm.fit(reference_pixels.transpose())
+
+        self.globalmin=np.amin( self.gmm.score_samples(self.gmm.means_ ))
+        
 
     def calculate_distance(self, image):
         """
@@ -198,15 +209,36 @@ class GaussianMixtureModelDistance:
         reference color modelled as a Gaussian Mixture Model.
         """
         pixels = np.reshape(image[:,:,self.bands_to_use], (-1, len(self.bands_to_use)))
-        distance = self.gmm.score_samples(pixels)
-        distance_image = np.reshape(distance, (image.shape[0], image.shape[1]))
+        loglikelihood=self.gmm.score_samples(pixels)
+     
+        
+        distance=self.log_likelihood_to_distance(loglikelihood)
+
+        distance_image = np.reshape(distance, (image.shape[0], image.shape[1],1))
+        
         return distance_image
 
+    def log_likelihood_to_distance(self,loglikelihood):
+        """Function for converting the gmm loglikelyhood to such that it is only positive values"""
+        distance = -(loglikelihood-self.globalmin)
+        
+        
+        if np.any(distance<0):
+            if not self.minimum_is_not_at_mean:
+                print("Warning: the global minimum of the -log(Likelyhood) is not at the center of either of the clusters.")
+        
+        distance[distance<0]=0 #sets any still negative value to zero 
+
+        return distance
+    
+
+
+    
     def show_statistics(self):
         print("GMM")
         print(self.gmm)
-        print(self.gmm.means_)
-        print(self.gmm.covariances_)
+        print(f'GMM means= {self.gmm.means_}')
+        print(f'GMM covariance= {self.gmm.covariances_}')
 
 
 
@@ -217,13 +249,13 @@ class GaussianMixtureModelDistance:
 
 
 
-def initialize_colormodel(reference_pixels,method):
+def initialize_colormodel(reference_pixels,method,param):
     model= None
     match method:
         case 'mahalanobis':
             model=MahalanobisDistance()
         case 'gmm':
-            model=GaussianMixtureModelDistance
+            model=GaussianMixtureModelDistance(param)
         case _:
             print("The method selected does not match any known colormodel methods, Mahalanobis Distance was used instead")
             model=MahalanobisDistance()
