@@ -29,7 +29,7 @@ class ReferencePixels:
         
 
         number_of_bands=self.reference_image.shape[0]-1
-        print(number_of_bands)
+        
         if bands_to_use == None:
             self.bands_to_use=list(range(number_of_bands))
         else:
@@ -39,8 +39,7 @@ class ReferencePixels:
         for i in self.bands_to_use:
             if i > number_of_bands:
                 raise Exception("no bands of the chosen index")
-        print(self.reference_image.shape)
-        print(self.reference_image[self.bands_to_use,:,:].shape)
+        
         pixels=np.reshape(self.reference_image[self.bands_to_use,:,:],(len(self.bands_to_use),-1))
         pixels = pixels.transpose()
         mask_pixels = np.reshape(self.mask, (-1))
