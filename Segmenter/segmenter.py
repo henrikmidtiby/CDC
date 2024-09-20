@@ -2,6 +2,7 @@ import os
 import time
 import numpy as np
 import rasterio
+import multiprocessing
 
 from tqdm import tqdm
 
@@ -21,13 +22,12 @@ class ColorBasedSegmenter:
 
     def apply_colormodel_to_tiles(self, tile_list):
         self.ensure_parent_directory_exist(self.output_tile_location)
+        num_cores=multiprocessing.cpu_count()
         start = time.time()
-        for tile in tqdm(tile_list):
-
-            #img = self.reference_pixels.colorspace.convert_to_selected_colorspace(tile.img)
-            if self.is_image_empty(tile.img):
-                continue
-            self.process_tile(tile)
+       
+        with multiprocessing.Pool(processes=num_cores) as pool:
+        # Distribute the process_tiles function to all tiles
+            list(tqdm(pool.imap(self.process_tile, tile_list), total=len(tile_list)))
         print("Time to run all tiles: ", time.time() - start)
     
    # def apply_threshold_to_image(threshhold,img):
@@ -57,6 +57,8 @@ class ColorBasedSegmenter:
 
     def process_tile(self, tile):
         tile_img=tile.read_tile()
+        if self.is_image_empty(tile_img):
+                return
         if not self.is_image_empty(tile_img):
             distance_image = self.colormodel.calculate_distance(tile_img)
             distance =convertScaleAbs(distance_image,alpha=self.output_scale_factor)
