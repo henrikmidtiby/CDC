@@ -61,7 +61,7 @@ class ROC:
         
         positive_distances=np.sort(distances[positive_mask>=200])
         negative_distances=np.sort(distances[negative_mask>=200])
-        print(positive_distances)
+        
         i=0
         n=0
         while(i<len(positive_distances)):
@@ -83,8 +83,7 @@ class ROC:
                 i+=1
             else:
                 n+=1
-        print(min(negative_distances))
-        print(max(positive_distances))
+        
         if n< len(negative_distances):
             thresholds = negative_distances[n::10]
             for th in thresholds:
