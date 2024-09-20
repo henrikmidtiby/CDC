@@ -104,13 +104,6 @@ class convert_orthomosaic_to_list_of_tiles:
 
     
 
-    def read_tile(self, orthomosaic, tile):
-        with rasterio.open(orthomosaic) as src:
-            window = Window.from_slices((tile.ulc[0], tile.lrc[0]),
-                                        (tile.ulc[1], tile.lrc[1]))
-            im = src.read(window=window)
-        return im
-
 
     def convert(self, filename_orthomosaic):
         self.filename_orthomosaic = filename_orthomosaic
@@ -127,13 +120,9 @@ class convert_orthomosaic_to_list_of_tiles:
 
         processing_tiles = self.get_processing_tiles(self.tile_size)
 
-        specified_processing_tiles = self.get_list_of_specified_tiles(processing_tiles)
+        self.specified_tiles = self.get_list_of_specified_tiles(processing_tiles)
         
         
-        for tile in specified_processing_tiles:
-            tile.img = self.read_tile(self.filename_orthomosaic, tile)
-
-        self.specified_tiles = specified_processing_tiles
 
 
     def get_list_of_specified_tiles(self, tile_list):
@@ -222,6 +211,6 @@ class convert_orthomosaic_to_list_of_tiles:
                     else:
                         tile_c = c * step_width
                     tiles.append(Tile((tile_r, tile_c), pos, height, width, 
-                                    resolution, crs, left, top))
+                                    resolution, crs, left, top,self.filename_orthomosaic))
 
             return tiles, step_width, step_height
