@@ -24,15 +24,15 @@ def get_single_tile(orthomosaic):
             crs = src.crs
             left = src.bounds[0]
             top = src.bounds[3]
-            tile=Tile((0,0),[0,0],rows,columns,resolution,crs,left,top)
+            tile=Tile((0,0),[0,0],rows,columns,resolution,crs,left,top,orthomosaic)
             im=src.read()
-            tile.img=im.transpose(1, 2, 0)
+            tile.img=im
             tile.tile_number=0
      return tile 
 
 class Tile:
     def __init__(self, start_point, position, height, width, 
-                 resolution, crs, left, top):
+                 resolution, crs, left, top,path_to_orthomosaic):
         # Data for the tile
         self.size = (height, width)
         self.tile_position = position
@@ -44,7 +44,7 @@ class Tile:
         self.crs = crs
         self.left = left
         self.top = top
-
+        self.path_to_orthomosaic = path_to_orthomosaic
         self.ulc_global = [
                 self.top - (self.ulc[0] * self.resolution[0]), 
                 self.left + (self.ulc[1] * self.resolution[1])]
@@ -61,13 +61,21 @@ class Tile:
         if not os.path.isdir(path):
             os.makedirs(path)
 
+    def read_tile(self):
+        with rasterio.open(self.path_to_orthomosaic) as src:
+            window = Window.from_slices((self.ulc[0], self.lrc[0]),
+                                        (self.ulc[1], self.lrc[1]))
+            im = src.read(window=window)
+        return im
+
+
     def save_tile(self,output_tile_location):
         if  output_tile_location is not None:
             self.ensure_parent_directory_exist(output_tile_location)
             name_mahal_results = f'{ output_tile_location }/mahal{ self.tile_number:04d}.tiff'
             img_to_save = self.img
-            channels = img_to_save.shape[2]
-            temp_to_save = img_to_save.transpose(2, 0, 1) 
+            channels = img_to_save.shape[0]
+            
             new_dataset = rasterio.open(name_mahal_results,
                                         'w',
                                         driver='GTiff',
@@ -75,10 +83,10 @@ class Tile:
                                         height=self.size[0],
                                         width=self.size[1],
                                         count=channels,
-                                        dtype=temp_to_save.dtype,
+                                        dtype=img_to_save.dtype,
                                         crs=self.crs,
                                         transform=self.transform)
-            new_dataset.write(temp_to_save)
+            new_dataset.write(img_to_save)
             new_dataset.close()
 
 class convert_orthomosaic_to_list_of_tiles:
@@ -94,12 +102,6 @@ class convert_orthomosaic_to_list_of_tiles:
 
         self.filename_orthomosaic = None
 
-
-    def rasterio_open(self,image):  # might include alpha channel
-        # image has the shape ncolorchannels x height x width
-        false_color_img = image.transpose(1, 2, 0)
-        # false_color_image has the shape height x width x ncolorchannels
-        return false_color_img
     
 
     def read_tile(self, orthomosaic, tile):
@@ -107,7 +109,7 @@ class convert_orthomosaic_to_list_of_tiles:
             window = Window.from_slices((tile.ulc[0], tile.lrc[0]),
                                         (tile.ulc[1], tile.lrc[1]))
             im = src.read(window=window)
-        return self.rasterio_open(image=im)
+        return im
 
 
     def convert(self, filename_orthomosaic):

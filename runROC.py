@@ -37,7 +37,7 @@ if __name__=='__main__':
                     help='The path to the file(.tif) containing the a mask of the indicating places in the image where where the segmentation should NOT characterise as positive, with value 255 indicating negative.')
     parser.add_argument('--plot_options',
                     default=None,
-                    help='Plotting options default is False Positive Rate alternative plotting options are precission')
+                    help='Plotting options default is False Positive Rate alternative plotting options are precision')
     
 
     args=parser.parse_args()

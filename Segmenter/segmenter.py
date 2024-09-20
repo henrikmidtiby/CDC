@@ -1,18 +1,10 @@
 import os
 import time
-import argparse
 import numpy as np
+import rasterio
+
 from tqdm import tqdm
 
-
-
-#git test
-
-def rasterio_open(image):  # might include alpha channel
-        # image has the shape ncolorchannels x height x width
-        false_color_img = image.transpose(1, 2, 0)
-        # false_color_image has the shape height x width x ncolorchannels
-        return false_color_img
 
 def convertScaleAbs(img,alpha):
     scaled_img=alpha*img
@@ -71,10 +63,29 @@ class ColorBasedSegmenter:
 
 
     def process_tile(self, tile):
-        if not self.is_image_empty(tile.img):
-            distance_image = self.colormodel.calculate_distance(tile.img[:, :, :])
+        tile_img=tile.read_tile()
+        if not self.is_image_empty(tile_img):
+            distance_image = self.colormodel.calculate_distance(tile_img)
             distance =convertScaleAbs(distance_image,alpha=self.output_scale_factor)
             distance = distance.astype(np.uint8)
-            tile.img = distance
-            tile.save_tile(self.output_tile_location)
+            self.save_tile(distance,tile,self.output_tile_location)
+
+    def save_tile(self,img,tile,output_tile_location):
+        if  output_tile_location is not None:
+            self.ensure_parent_directory_exist(output_tile_location)
+            name_mahal_results = f'{ output_tile_location }/distance_tiles{ tile.tile_number:04d}.tiff'
+            img_to_save = img
+            channels = img_to_save.shape[0]
+            new_dataset = rasterio.open(name_mahal_results,
+                                        'w',
+                                        driver='GTiff',
+                                        res=tile.resolution,
+                                        height=tile.size[0],
+                                        width=tile.size[1],
+                                        count=channels,
+                                        dtype=img_to_save.dtype,
+                                        crs=tile.crs,
+                                        transform=tile.transform)
+            new_dataset.write(img_to_save)
+            new_dataset.close()
 
