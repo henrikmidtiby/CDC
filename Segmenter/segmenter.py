@@ -36,8 +36,7 @@ class ColorBasedSegmenter:
         start = time.time()
     
         self.process_tile(tile)
-        print("Time to run all tiles: ", time.time() - start)
-       
+        print("Time to run all tiles: ", time.time() - start)     
     
 
     def initialize_segmenter(self,output_tile_location,colormodel,scalefactor=None):
