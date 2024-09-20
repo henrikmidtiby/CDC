@@ -20,9 +20,6 @@ class ColorBasedSegmenter:
         self.output_scale_factor = 5
 
     def apply_colormodel_to_tiles(self, tile_list):
-        output_directory = os.path.dirname(self.output_tile_location)
-        if not os.path.isdir(output_directory):
-            os.makedirs(output_directory)
         self.ensure_parent_directory_exist(self.output_tile_location)
         start = time.time()
         for tile in tqdm(tile_list):
@@ -35,16 +32,13 @@ class ColorBasedSegmenter:
     
    # def apply_threshold_to_image(threshhold,img):
     def apply_colormodel_to_single_tile(self, tile):
-        output_directory = os.path.dirname(self.output_tile_location)
-        if not os.path.isdir(output_directory):
-            os.makedirs(output_directory)
         self.ensure_parent_directory_exist(self.output_tile_location)
         start = time.time()
     
         self.process_tile(tile)
         print("Time to run all tiles: ", time.time() - start)
        
-
+    
 
     def initialize_segmenter(self,output_tile_location,colormodel,scalefactor=None):
         self.output_tile_location=output_tile_location
