@@ -63,7 +63,7 @@ class RasterAnnotator:
         self.ax.clear()
         self.ax.imshow(self._read_image(), cmap='gist_ncar')
         if self.annotated_mask is not None:
-            self.ax.imshow(self.annotated_mask, cmap='binary', alpha=0.5)
+            self.ax.imshow(self.annotated_mask, cmap='binary', alpha=0.1)
         plt.draw()
 
     def _read_image(self):
@@ -90,7 +90,7 @@ class RasterAnnotator:
         if self.annotated_mask is None:
             self.annotated_mask = np.zeros_like(self.dataset.read(1), dtype=np.uint8)
 
-        r, c = np.indices((self.brush_size * 2 , self.brush_size * 2 )) - self.brush_size
+        r, c = np.indices((self.brush_size * 1 , self.brush_size * 1 )) - self.brush_size
         valid_mask = (x + r >= 0) & (x + r < self.annotated_mask.shape[1]) & (y + c >= 0) & (y + c < self.annotated_mask.shape[0])
         with self.update_lock:
             self.annotated_mask[y + r[valid_mask], x + c[valid_mask]] = 255  # Annotation
