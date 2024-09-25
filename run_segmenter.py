@@ -2,13 +2,31 @@ import Segmenter.segmenter as segmenter
 import Segmenter.tiler as tiler
 import Segmenter.colormodels as colormodels
 import argparse
+import Segmenter.transform as transform
+
+
+
+# possibility of adding a self defined transformed on the images segmented
+def self_def_function(img):
+    print(img.shape)
+    img= img[0:2,:]
+    print("self_def_function")
+    return img
 
 
 def segment_orthomosaic(args):    
     referencepixels=colormodels.get_referencepixels(args.reference,args.mask,args.bands_to_use,args.ref_pixel_filename,args.ref_method)
-    colormodel=colormodels.initialize_colormodel(referencepixels,args.method,args.param)
+
+    transformation=transform.Transformer()
+    if args.transform is True:
+        transformation.define_transform(self_def_function)
+        print("call define transform")
+    
+        
+
+    colormodel=colormodels.initialize_colormodel(referencepixels,args.method,args.param,transformation)
     cbs = segmenter.ColorBasedSegmenter()
-    cbs.initialize_segmenter(args.output_tile_location,colormodel,args.scale)
+    cbs.initialize_segmenter(args.output_tile_location,colormodel,args.scale,transformation)
     if args.notiling==False:
         tile_list=tiler.get_tilelist(args.orthomosaic,int(args.tile_size))
            

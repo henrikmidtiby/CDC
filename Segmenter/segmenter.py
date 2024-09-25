@@ -19,6 +19,7 @@ class ColorBasedSegmenter:
         self.output_tile_location = None
         self.colormodel = None
         self.output_scale_factor = 5
+        self.transform=None
 
     def apply_colormodel_to_tiles(self, tile_list):
         self.ensure_parent_directory_exist(self.output_tile_location)
@@ -39,11 +40,15 @@ class ColorBasedSegmenter:
         print("Time to run all tiles: ", time.time() - start)     
     
 
-    def initialize_segmenter(self,output_tile_location,colormodel,scalefactor=None):
+    def initialize_segmenter(self,output_tile_location,colormodel,scalefactor=None,transform=None):
         self.output_tile_location=output_tile_location
         self.colormodel=colormodel
         if scalefactor is not None:
             self.output_scale_factor=scalefactor
+        if transform is not None:
+            self.transform=transform
+
+    
 
 
     def is_image_empty(self, image):
@@ -60,7 +65,7 @@ class ColorBasedSegmenter:
         if self.is_image_empty(tile_img):
                 return
         if not self.is_image_empty(tile_img):
-            distance_image = self.colormodel.calculate_distance(tile_img)
+            distance_image = self.colormodel.calculate_distance(tile_img,self.transform)
             distance =convertScaleAbs(distance_image,alpha=self.output_scale_factor)
             distance = distance.astype(np.uint8)
             self.save_tile(distance,tile,self.output_tile_location)
