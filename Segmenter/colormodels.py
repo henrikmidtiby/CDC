@@ -174,6 +174,8 @@ class MahalanobisDistance:
 
 
         inv_cov = np.linalg.inv(self.covariance)
+
+        
         diff = transformed_pixels - self.average
         modified_dot_product = diff * (diff @ inv_cov)
         distance = np.sum(modified_dot_product, axis=1)
