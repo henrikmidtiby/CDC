@@ -3,6 +3,7 @@ import Segmenter.tiler as tiler
 import Segmenter.colormodels as colormodels
 import argparse
 import Segmenter.transform as transform
+import numpy as np
 
 
 
@@ -13,13 +14,20 @@ def self_def_function(img):
     print("self_def_function")
     return img
 
+def gamma_corrector_factory(gamma_value):
+    def gamma_corrector(img):
+        img = np.power(img, gamma_value)
+        return img
+    return gamma_corrector
+
 
 def segment_orthomosaic(args):    
     referencepixels=colormodels.get_referencepixels(args.reference,args.mask,args.bands_to_use,args.ref_pixel_filename,args.ref_method)
 
     transformation=transform.Transformer()
     if args.transform is True:
-        transformation.define_transform(self_def_function)
+        #transformation.define_transform(self_def_function)
+        transformation.define_transform(gamma_corrector_factory(1.2))
         print("call define transform")
     
         
@@ -31,10 +39,16 @@ def segment_orthomosaic(args):
         tile_list=tiler.get_tilelist(args.orthomosaic,int(args.tile_size))
            
         cbs.apply_colormodel_to_tiles(tile_list)
+        if args.resume is True:
+            cbs.calculate_statistics(tile_list)
+            cbs.save_statistics(args)
     if args.notiling==True:
         single_tile=tiler.get_single_tile(args.orthomosaic)
         cbs.apply_colormodel_to_single_tile(single_tile)
-        
+        if args.resume is True:
+            cbs.calculate_statistics([single_tile])
+            cbs.save_statistics(args)
+    
 
     
 
@@ -110,6 +124,10 @@ if __name__=='__main__':
                         default=False,
                         type=bool,
                         help='option for transforming between colorspaces')
+    parser.add_argument('--resume',
+                        default=False,
+                        type=bool,
+                        help='option for adding resume of the segmentation as output')
     args = parser.parse_args()
 
     segment_orthomosaic(args)

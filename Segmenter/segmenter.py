@@ -3,6 +3,8 @@ import time
 import numpy as np
 import rasterio
 import multiprocessing
+from datetime import datetime
+import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 
@@ -20,6 +22,9 @@ class ColorBasedSegmenter:
         self.colormodel = None
         self.output_scale_factor = 5
         self.transform=None
+        self.mean_pixel_value=None
+        self.image_statistics=[]
+        self.number_of_tiles=None
 
     def apply_colormodel_to_tiles(self, tile_list):
         self.ensure_parent_directory_exist(self.output_tile_location)
@@ -88,4 +93,72 @@ class ColorBasedSegmenter:
                                         transform=tile.transform)
             new_dataset.write(img_to_save)
             new_dataset.close()
+
+
+
+    def calculate_statistics(self, tile_list):
+        null_dist = self.colormodel.calculate_distance(np.ones((3, 1, 1))*255,self.transform)[0][0]
+        self.number_of_tiles=len(tile_list)
+
+        for tile in tile_list:
+            tile_img=tile.read_tile()
+            if not np.max(tile_img[:, :]) == np.min(tile_img[:, :]):
+                image_statistics = np.histogram(tile_img, bins=256, range=(0, 255))[0]
+
+                # Empty pixel are not counted in the histogram. 
+                # Unwanted side effect is that pixels with a similar distance will also be discarded.
+                image_statistics[int(null_dist)] = 0
+                self.image_statistics=np.append(self.image_statistics,image_statistics)
+
+        mean_divide = 0
+        mean_sum = 0
+        for x in range(0, 256):
+            mean_sum += self.image_statistics[x] * x
+            mean_divide += self.image_statistics[x]
+
+        
+        
+        self.mean_pixel_value = mean_sum / mean_divide
+        
+        
+    def save_statistics(self,args):
+        statistics_path = self.output_tile_location + "/statistics"
+        self.ensure_parent_directory_exist(statistics_path)
+
+        print(f"Writing statistics to the folder \"{ statistics_path }\"")
+
+        # Plot histogram of pixel valuess
+        plt.plot(self.image_statistics)
+        plt.title("Histogram of pixel values")
+        plt.xlabel("Pixel Value")
+        plt.ylabel("Number of Pixels")
+        plt.savefig(statistics_path + "/Histogram of pixel values", dpi=300)
+        plt.close()
+
+        f = open(statistics_path + "/output_file.txt", "w")
+        f.write("Input parameters:\n")
+        f.write(f" - Orthomosaic: {args.orthomosaic}\n")
+        f.write(f" - Reference image: {args.reference}\n")
+        f.write(f" - Annotated image: {args.mask}\n")
+        f.write(f" - Output scale factor: {args.scale}\n")
+        f.write(f" - Tile sizes: {args.tile_size}\n")
+        f.write(f" - Output tile location: {args.output_tile_location}\n")
+        f.write(f" - Method: {args.method}\n")
+        f.write(f" - Parameter: {args.param}\n")
+        f.write(f" - Transform: {args.transform}\n")
+        f.write(f" - reference pixels file: {args.ref_pixel_filename}\n")
+        f.write(f" - Date and time of execution: {datetime.now().replace(microsecond=0)}\n")
+
+        f.write("\n\nOutput from run\n")
+        f.write(" - Average color value of annotated pixels\n")
+        f.write(f" - {self.colormodel.average}\n")
+        f.write(" - Covariance matrix of the annotated pixels\n")
+        f.write(" - " + str(self.colormodel.covariance).replace('\n', '\n   ') + "\n")
+        
+        f.write(f" - Mean pixel value: {self.mean_pixel_value}\n")
+
+        f.write(f" - Number of tiles: {self.number_of_tiles}\n")
+        
+        f.close()
+
 
