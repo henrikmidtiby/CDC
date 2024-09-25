@@ -105,9 +105,7 @@ class ReferencePixels_jpg:
                    self.values.transpose(), 
                    delimiter = '\t', 
                    fmt='%i', 
-                   header = self.colorspace.colorspace[0] + "\t" 
-                   + self.colorspace.colorspace[1] + "\t" 
-                   + self.colorspace.colorspace[2],
+                   header="b\tg\tr", 
                    comments = "")
 
 
