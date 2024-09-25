@@ -87,7 +87,11 @@ if __name__=='__main__':
                         help='Options for choosing not to seperate orthomosaic into tiles')
     parser.add_argument( '--ref_method',
                         default=None,
-                        help='Method for generating Reference pixels, default is from Mask( .tiff file), other option is red anotated jpg file.')
+                        help='Method for generating Reference pixels, default is from Mask( .tiff file), other option is "jpg" red anotated jpg file.')
+    parser.add_argument('--transform',
+                        default=False,
+                        type=bool,
+                        help='option for transforming between colorspaces')
     args = parser.parse_args()
 
     segment_orthomosaic(args)
