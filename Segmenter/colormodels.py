@@ -3,6 +3,7 @@ import numpy as np
 import rasterio
 from sklearn import mixture
 import cv2
+from icecream import ic
 
 
 
@@ -149,24 +150,31 @@ class MahalanobisDistance:
         self.bands_to_use=None
         
 
-    def calculate_statistics(self, reference_pixels):
-        self.covariance = np.cov(reference_pixels)
-        self.average = np.average(reference_pixels, axis=1)
+    def calculate_statistics(self, reference_pixels,transform):
+        print(reference_pixels)
+        transformed_reference_pixels = transform.transform_image( reference_pixels )
+
+
+        self.covariance = np.cov(transformed_reference_pixels)
+        self.average = np.average(transformed_reference_pixels, axis=1)
        
         if self.covariance.shape is ():
             self.covariance=np.reshape(self.covariance,(1,1))
 
         
 
-    def calculate_distance(self, image):
+    def calculate_distance(self, image,transform):
         """
         For all pixels in the image, calculate the Mahalanobis distance
         to the reference color.
         """
         
-        pixels = np.reshape(image[self.bands_to_use,:,:], (len(self.bands_to_use),-1)).transpose()
+        pixels = np.reshape(image[self.bands_to_use,:,:], (len(self.bands_to_use),-1))
+        transformed_pixels=transform.transform_image(pixels).transpose()
+
+
         inv_cov = np.linalg.inv(self.covariance)
-        diff = pixels - self.average
+        diff = transformed_pixels - self.average
         modified_dot_product = diff * (diff @ inv_cov)
         distance = np.sum(modified_dot_product, axis=1)
         distance = np.sqrt(distance)
@@ -194,21 +202,23 @@ class GaussianMixtureModelDistance:
 
         self.minimum_is_not_at_mean=False
 
-    def calculate_statistics(self, reference_pixels):
+    def calculate_statistics(self, reference_pixels,transform):
         self.gmm = mixture.GaussianMixture(n_components=self.n_components,
                                            covariance_type="full")
-        self.gmm.fit(reference_pixels.transpose())
+        transformed_reference_pixels=transform.transform_image(reference_pixels).transpose()
+        self.gmm.fit(transformed_reference_pixels)
 
         self.globalmin=np.amin( self.gmm.score_samples(self.gmm.means_ ))
         
 
-    def calculate_distance(self, image):
+    def calculate_distance(self, image,transform):
         """
         For all pixels in the image, calculate the distance to the
         reference color modelled as a Gaussian Mixture Model.
         """
-        pixels = np.reshape(image[self.bands_to_use,:,:], (len(self.bands_to_use),-1)).transpose()
-        loglikelihood=self.gmm.score_samples(pixels)
+        pixels = np.reshape(image[self.bands_to_use,:,:], (len(self.bands_to_use),-1))
+        transformed_pixels=transform.transform_image(pixels).transpose()
+        loglikelihood=self.gmm.score_samples(transformed_pixels)
      
         
         distance=self.log_likelihood_to_distance(loglikelihood)
@@ -248,7 +258,7 @@ class GaussianMixtureModelDistance:
 
 
 
-def initialize_colormodel(reference_pixels,method,param):
+def initialize_colormodel(reference_pixels,method,param,transform):
     model= None
     match method:
         case 'mahalanobis':
@@ -260,7 +270,7 @@ def initialize_colormodel(reference_pixels,method,param):
             model=MahalanobisDistance()
     
     model.bands_to_use=reference_pixels.bands_to_use
-    model.calculate_statistics(reference_pixels.values)
+    model.calculate_statistics(reference_pixels.values,transform)
     model.show_statistics()
     return model
 
