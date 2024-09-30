@@ -1,4 +1,4 @@
-# Tutorial - 
+# Tutorial - semgenting pumkin orthomosaic
 
 
 The Orthomosaic-color-distance-calculater is a tool created for the purpose of locating objects in images/orthomosaics, using the the pixel values to distinguish them.
