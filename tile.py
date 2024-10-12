@@ -42,9 +42,17 @@ class Tile:
         if self.output_tile_location is not None:
             self.ensure_parent_directory_exist(self.output_tile_location)
             name_mahal_results = f'{ self.output_tile_location }/mahal{ self.tile_number:04d}.tiff'
-            img_to_save = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
-            channels = img_to_save.shape[2]
-            temp_to_save = img_to_save.transpose(2, 0, 1) 
+            
+            if len(self.img.shape) == 2:
+                img_to_save = self.img
+                channels = 1
+                temp_to_save = img_to_save.reshape(1, img_to_save.shape[0],
+                                               img_to_save.shape[1])
+            else:
+                img_to_save = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
+                channels = img_to_save.shape[2]
+                temp_to_save = img_to_save.transpose(2, 0, 1) 
+            
             new_dataset = rasterio.open(name_mahal_results,
                                         'w',
                                         driver='GTiff',
