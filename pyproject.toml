@@ -24,6 +24,9 @@ select = [
 ]
 
 ignore = [
+  # Doc string format currently not used
+  "D205",
+  "D401",
   # Use ternary operator instead of if/else
   "SIM108",
   # docstring ignores - conflicting rules
