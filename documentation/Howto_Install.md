@@ -7,4 +7,3 @@ git clone https://github.com/henrikmidtiby/ColorBasedSegmenterForOrthomosaics.gi
 cd ColorBasedSegmenterForOrthomosaics
 pipenv install
 ```
-

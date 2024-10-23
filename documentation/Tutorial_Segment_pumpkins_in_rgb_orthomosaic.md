@@ -10,13 +10,13 @@ The dataset consist of the following files
 - a crop of the orthomosaic **crop_from_orthomosaic.tif**
 - an annotated copy of the cropped orthomosaic **crop_from_orthomosaic_annotated.tif**
 
-To learn the color distribution, the information from the **ccrop_from_orthomosaic.tif** file is combined with the annotations in the **crop_from_orthomosaic_annotated.tif** file. 
+To learn the color distribution, the information from the **ccrop_from_orthomosaic.tif** file is combined with the annotations in the **crop_from_orthomosaic_annotated.tif** file.
 
-The **crop_from_orthomosaic.tif** looks as follows: 
+The **crop_from_orthomosaic.tif** looks as follows:
 
 ![Image](pumpkins_example/crop_from_orthomosaic.png)
 
-The **crop_from_orthomosaic_annotated.tif** looks as follows: 
+The **crop_from_orthomosaic_annotated.tif** looks as follows:
 
 ![Image](pumpkins_example/crop_from_orthomosaic_annotated.png)
 
@@ -41,7 +41,7 @@ Covariance matrix of the annotated pixels
  [ 78.29253447 153.76939545 145.3870695 ]]
 100%|█████████████████| 99/99 [04:02<00:00,  2.45s/it]
 ```
-The generated output is a set of map tiles, that contain the calculated distances to the reference color. The tiles can be found in the `pumpkins/tiles` directory. The final step is to combine the tiles into a single orthomosaic, which is done using the **gdal_merge.py** tool on the command line as follows. 
+The generated output is a set of map tiles, that contain the calculated distances to the reference color. The tiles can be found in the `pumpkins/tiles` directory. The final step is to combine the tiles into a single orthomosaic, which is done using the **gdal_merge.py** tool on the command line as follows.
 ```bash
 $ cd pumpkins
 $ gdal_merge.py -o pumpkins/colordistance.tif -a_nodata 255 pumpkins/tiles/mahal*.tiff
