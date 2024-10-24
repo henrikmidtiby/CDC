@@ -194,6 +194,7 @@ class ColorBasedSegmenter:
         self.colormodel = MahalanobisDistance()
         self.ref_image_filename = None
         self.ref_image_annotated_filename = None
+        self.ref_image_annotated_is_black_and_white = False
         self.output_scale_factor = None
         self.pixel_mask_file = "pixel_values"
 
@@ -224,7 +225,10 @@ class ColorBasedSegmenter:
     def initialize_color_model(self, ref_image_filename, ref_image_annotated_filename):
         self.reference_pixels.load_reference_image(ref_image_filename)
         self.reference_pixels.load_annotated_image(ref_image_annotated_filename)
-        self.reference_pixels.generate_pixel_mask()
+        if self.ref_image_annotated_is_black_and_white:
+            self.reference_pixels.generate_pixel_mask(lower_range=(245, 245, 245), higher_range=(256, 256, 256))
+        else:
+            self.reference_pixels.generate_pixel_mask()
         self.reference_pixels.show_statistics_of_pixel_mask()
         self.ensure_parent_directory_exist(self.output_tile_location)
         self.reference_pixels.save_pixel_values_to_file(self.output_tile_location + "/" + self.pixel_mask_file + ".csv")
@@ -358,6 +362,11 @@ parser.add_argument(
     help="Change the name in which the pixel mask is saved. It "
     "defaults to pixel_values (.csv is automatically added)",
 )
+parser.add_argument(
+    "--annotated_bw",
+    action="store_true",
+    help="Enable if the annotated reference image is black with white annotations instead of the default image with red annotations.",
+)
 args = parser.parse_args()
 
 
@@ -378,6 +387,7 @@ cbs.ref_image_annotated_filename = args.annotated
 cbs.output_scale_factor = args.scale
 cbs.pixel_mask_file = args.mask_file_name
 cbs.reference_pixels.colorspace.colorspace = args.colorspace
+cbs.ref_image_annotated_is_black_and_white = args.annotated_bw
 cbs.main(tile_list)
 
 
