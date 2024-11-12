@@ -1,0 +1,51 @@
+[tool.codespell]
+check-hidden = true
+skip = ".git,venv,*.c"
+ignore-words-list = "mor"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+fix = true
+
+[tool.ruff.lint]
+select = [
+  "A",
+  "B",
+  "C4",
+  "D",
+  "E",
+  "F",
+  "I",
+  "PGH",
+  "PT",
+  "SIM",
+  "UP",
+]
+
+ignore = [
+  # Doc string format currently not used
+  "D205",
+  "D401",
+  # Use ternary operator instead of if/else
+  "SIM108",
+  # docstring ignores - conflicting rules
+  "D203",
+  "D212",
+  # missing docstrings
+  "D100",
+  "D101",
+  "D102",
+  "D103",
+  "D107",
+  # as recommended by https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+  "D206",
+  "D300",
+  "E111",
+  "E114",
+  "E117",
+  "E501",
+]
+
+[tool.ruff.format]
+docstring-code-format = true
