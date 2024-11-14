@@ -13,12 +13,10 @@ class convert_orthomosaic_to_list_of_tiles:
         self.tile_size = 3000
         self.run_specific_tile = None
         self.run_specific_tileset = None
-
         self.resolution = None
         self.crs = None
         self.left = None
         self.top = None
-
         self.output_tile_location = None
         self.filename_orthomosaic = None
 
@@ -83,7 +81,6 @@ class convert_orthomosaic_to_list_of_tiles:
         half_overlap_r = (tile_size - st_height) / 2
         for tile_number, tile in enumerate(processing_tiles):
             tile.tile_number = tile_number
-            tile.output_tile_location = self.output_tile_location
             tile.processing_range = [
                 [half_overlap_r, tile_size - half_overlap_r],
                 [half_overlap_c, tile_size - half_overlap_c],

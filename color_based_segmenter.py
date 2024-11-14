@@ -178,7 +178,7 @@ class ColorBasedSegmenter:
             distance = cv2.convertScaleAbs(distance_image, alpha=self.output_scale_factor, beta=0)
             distance = distance.astype(np.uint8)
             tile.img = distance
-            tile.save_tile()
+            tile.save_tile(self.output_tile_location)
 
     def calculate_statistics(self, tile_list):
         null_dist = self.colormodel.calculate_distance(np.ones((1, 1, 3)) * 255)[0][0]
