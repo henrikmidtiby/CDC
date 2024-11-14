@@ -27,9 +27,7 @@ class MahalanobisDistance:
         modified_dot_product = diff * (diff @ inv_cov)
         distance = np.sum(modified_dot_product, axis=1)
         distance = np.sqrt(distance)
-
         distance_image = np.reshape(distance, (image.shape[0], image.shape[1]))
-
         return distance_image
 
     def show_statistics(self):

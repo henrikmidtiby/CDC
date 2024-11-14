@@ -134,7 +134,6 @@ class ColorBasedSegmenter:
         self.ref_image_annotated_is_black_and_white = False
         self.output_scale_factor = None
         self.pixel_mask_file = "pixel_values"
-
         self.image_statistics = np.zeros(256)
 
     def main(self, tile_list):
@@ -185,7 +184,6 @@ class ColorBasedSegmenter:
         for tile in tile_list:
             if np.max(tile.img[:, :]) != np.min(tile.img[:, :]):
                 image_statistics = np.histogram(tile.img, bins=256, range=(0, 255))[0]
-
                 # Empty pixel are not counted in the histogram.
                 # Unwanted side effect is that pixels with a similar distance will also be discarded.
                 image_statistics[int(null_dist * self.output_scale_factor)] = 0
@@ -195,16 +193,13 @@ class ColorBasedSegmenter:
         for x in range(0, 256):
             mean_sum += self.image_statistics[x] * x
             mean_divide += self.image_statistics[x]
-
         ic(null_dist)
         self.mean_pixel_value = mean_sum / mean_divide
 
     def save_statistics(self):
         statistics_path = self.output_tile_location + "/statistics"
         self.ensure_parent_directory_exist(statistics_path)
-
         print(f'Writing statistics to the folder "{ statistics_path }"')
-
         # Plot histogram of pixel values
         plt.plot(self.image_statistics)
         plt.title("Histogram of pixel values")
@@ -212,7 +207,6 @@ class ColorBasedSegmenter:
         plt.ylabel("Number of Pixels")
         plt.savefig(statistics_path + "/Histogram of pixel values", dpi=300)
         plt.close()
-
         with open(statistics_path + "/output_file.txt", "w") as f:
             f.write("Input parameters:\n")
             f.write(f" - Orthomosaic: {args.orthomosaic}\n")
