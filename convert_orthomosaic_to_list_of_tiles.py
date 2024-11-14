@@ -41,8 +41,8 @@ class convert_orthomosaic_to_list_of_tiles:
         output_directory = os.path.dirname(self.output_tile_location)
         if not os.path.isdir(output_directory):
             os.makedirs(output_directory)
-        self.divide_orthomosaic_into_tiles()
-        return self.specified_tiles
+        specified_tiles = self.divide_orthomosaic_into_tiles()
+        return specified_tiles
 
     def divide_orthomosaic_into_tiles(self):
         with rasterio.open(self.filename_orthomosaic) as src:
@@ -54,7 +54,7 @@ class convert_orthomosaic_to_list_of_tiles:
         specified_processing_tiles = self.get_list_of_specified_tiles(processing_tiles)
         for tile in specified_processing_tiles:
             tile.img = self.read_tile(self.filename_orthomosaic, tile)
-        self.specified_tiles = specified_processing_tiles
+        return specified_processing_tiles
 
     def get_list_of_specified_tiles(self, tile_list):
         specified_tiles = []
@@ -77,13 +77,10 @@ class convert_orthomosaic_to_list_of_tiles:
         all directions.
         """
         processing_tiles, st_width, st_height = self.define_tiles(0.01, tile_size, tile_size)
-
         no_r = np.max([t.tile_position[0] for t in processing_tiles])
         no_c = np.max([t.tile_position[1] for t in processing_tiles])
-
         half_overlap_c = (tile_size - st_width) / 2
         half_overlap_r = (tile_size - st_height) / 2
-
         for tile_number, tile in enumerate(processing_tiles):
             tile.tile_number = tile_number
             tile.output_tile_location = self.output_tile_location
@@ -99,7 +96,6 @@ class convert_orthomosaic_to_list_of_tiles:
                 tile.processing_range[0][0] = 0
             if tile.tile_position[1] == no_c:
                 tile.processing_range[0][1] = tile_size
-
         return processing_tiles
 
     def define_tiles(self, overlap, height, width):
@@ -114,15 +110,11 @@ class convert_orthomosaic_to_list_of_tiles:
             crs = src.crs
             left = src.bounds[0]
             top = src.bounds[3]
-
         last_position = (rows - height, columns - width)
-
         n_height = np.ceil(rows / (height * (1 - overlap))).astype(int)
         n_width = np.ceil(columns / (width * (1 - overlap))).astype(int)
-
         step_height = np.trunc(last_position[0] / (n_height - 1)).astype(int)
         step_width = np.trunc(last_position[1] / (n_width - 1)).astype(int)
-
         tiles = []
         for r in range(0, n_height):
             for c in range(0, n_width):
@@ -136,5 +128,4 @@ class convert_orthomosaic_to_list_of_tiles:
                 else:
                     tile_c = c * step_width
                 tiles.append(Tile((tile_r, tile_c), pos, height, width, resolution, crs, left, top))
-
         return tiles, step_width, step_height
