@@ -304,13 +304,27 @@ parser.add_argument(
     action="store_true",
     help="Enable if the annotated reference image is black with white annotations instead of the default image with red annotations.",
 )
+parser.add_argument(
+    "--run_specific_tile",
+    nargs="+",
+    type=int,
+    metavar="TILE_ID",
+    help="If set, only run the specific tile numbers. (--run_specific_tile 16 65) will run tile 16 and 65.",
+)
+parser.add_argument(
+    "--run_specific_tileset",
+    nargs="+",
+    type=int,
+    metavar="FROM_TILE_ID TO_TILE_ID",
+    help="takes two inputs like (--from_specific_tileset 16 65). This will run every tile from 16 to 65.",
+)
 args = parser.parse_args()
 
 
 # Initialize the tile separator
 tsr = convert_orthomosaic_to_list_of_tiles()
-# tsr.run_specific_tile = args.run_specific_tile
-# tsr.run_specific_tileset = args.run_specific_tileset
+tsr.run_specific_tile = args.run_specific_tile
+tsr.run_specific_tileset = args.run_specific_tileset
 tsr.tile_size = args.tile_size
 tsr.output_tile_location = args.output_tile_location
 tile_list = tsr.main(args.orthomosaic)

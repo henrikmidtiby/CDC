@@ -50,29 +50,23 @@ class convert_orthomosaic_to_list_of_tiles:
             self.crs = src.crs
             self.left = src.bounds[0]
             self.top = src.bounds[3]
-
         processing_tiles = self.get_processing_tiles(self.tile_size)
-
         specified_processing_tiles = self.get_list_of_specified_tiles(processing_tiles)
-
         for tile in specified_processing_tiles:
             tile.img = self.read_tile(self.filename_orthomosaic, tile)
-
         self.specified_tiles = specified_processing_tiles
 
     def get_list_of_specified_tiles(self, tile_list):
         specified_tiles = []
-        for tile_number, tile in enumerate(tile_list):
-            if self.run_specific_tileset is not None or self.run_specific_tile is not None:
-                if self.run_specific_tileset is not None and (
-                    tile_number >= self.run_specific_tileset[0] and tile_number <= self.run_specific_tileset[1]
-                ):
-                    specified_tiles.append(tile)
-                if self.run_specific_tile is not None and tile_number in self.run_specific_tile:
-                    specified_tiles.append(tile)
-            else:
-                specified_tiles.append(tile)
-
+        if self.run_specific_tile is not None:
+            for tile_number in self.run_specific_tile:
+                specified_tiles.append(tile_list[tile_number])
+        if self.run_specific_tileset is not None:
+            for start, end in zip(self.run_specific_tileset[::2], self.run_specific_tileset[1::2], strict=False):
+                for tile_number in range(start, end + 1):
+                    specified_tiles.append(tile_list[tile_number])
+        if self.run_specific_tile is None and self.run_specific_tileset is None:
+            return tile_list
         return specified_tiles
 
     def get_processing_tiles(self, tile_size):
