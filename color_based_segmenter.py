@@ -36,62 +36,38 @@ from datetime import datetime
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import rasterio
 from icecream import ic
-from rasterio.windows import Window
 from tqdm import tqdm
 
 from color_models import GaussianMixtureModelDistance, MahalanobisDistance
 from convert_orthomosaic_to_list_of_tiles import convert_orthomosaic_to_list_of_tiles
 
 
-def rasterio_opencv2(image):
-    if image.shape[0] >= 3:  # might include alpha channel
-        false_color_img = image.transpose(1, 2, 0)
-        separate_colors = cv2.split(false_color_img)
-        return cv2.merge([separate_colors[2], separate_colors[1], separate_colors[0]])
-    else:
-        return image
+class ColorSpace:
+    def __init__(self, color_space=None):
+        self.color_space = color_space if color_space is not None else "bgr"
 
-
-def read_tile(orthomosaic, tile):
-    with rasterio.open(orthomosaic) as src:
-        window = Window.from_slices((tile.ulc[0], tile.lrc[0]), (tile.ulc[1], tile.lrc[1]))
-        im = src.read(window=window)
-    return rasterio_opencv2(im)
-
-
-class colorspace:
-    def __init__(self):
-        self.colorspace = "bgr"
-
-    def to_hsv(self, reference_img):
-        return cv2.cvtColor(reference_img, cv2.COLOR_BGR2HSV)
-
-    def to_lab(self, reference_img):
-        return cv2.cvtColor(reference_img, cv2.COLOR_BGR2Lab)
-
-    def convert_to_selected_colorspace(self, image):
-        if self.colorspace == "bgr":
+    def convert_to_selected_color_space(self, image):
+        if self.color_space == "bgr":
             return image
-        elif self.colorspace == "hsv":
-            return self.to_hsv(image)
-        elif self.colorspace == "lab":
-            return self.to_lab(image)
+        elif self.color_space == "hsv":
+            return cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        elif self.color_space == "lab":
+            return cv2.cvtColor(image, cv2.COLOR_BGR2Lab)
         else:
             raise Exception("Not a supported colorspace")
 
 
 class ReferencePixels:
-    def __init__(self):
+    def __init__(self, color_space):
         self.reference_image = None
         self.annotated_image = None
         self.pixel_mask = None
         self.values = None
-        self.colorspace = colorspace()
+        self.color_space = color_space
 
     def load_reference_image(self, filename_reference_image):
-        self.reference_image = self.colorspace.convert_to_selected_colorspace(cv2.imread(filename_reference_image))
+        self.reference_image = self.color_space.convert_to_selected_color_space(cv2.imread(filename_reference_image))
 
     def load_annotated_image(self, filename_annotated_image):
         self.annotated_image = cv2.imread(filename_annotated_image)
@@ -115,11 +91,11 @@ class ReferencePixels:
             self.values.transpose(),
             delimiter="\t",
             fmt="%i",
-            header=self.colorspace.colorspace[0]
+            header=self.color_space.color_space[0]
             + "\t"
-            + self.colorspace.colorspace[1]
+            + self.color_space.color_space[1]
             + "\t"
-            + self.colorspace.colorspace[2],
+            + self.color_space.color_space[2],
             comments="",
         )
 
@@ -127,7 +103,8 @@ class ReferencePixels:
 class ColorBasedSegmenter:
     def __init__(self):
         self.output_tile_location = None
-        self.reference_pixels = ReferencePixels()
+        self.color_space = ColorSpace()
+        self.reference_pixels = ReferencePixels(self.color_space)
         self.colormodel = MahalanobisDistance()
         self.ref_image_filename = None
         self.ref_image_annotated_filename = None
@@ -140,7 +117,7 @@ class ColorBasedSegmenter:
         self.initialize_color_model(self.ref_image_filename, self.ref_image_annotated_filename)
         start = time.time()
         for tile in tqdm(tile_list):
-            tile.img = self.reference_pixels.colorspace.convert_to_selected_colorspace(tile.img)
+            tile.img = self.color_space.convert_to_selected_color_space(tile.img)
             self.process_tile(tile)
         print("Time to run all tiles: ", time.time() - start)
         """start = time.time()
@@ -331,7 +308,7 @@ cbs.ref_image_filename = args.reference
 cbs.ref_image_annotated_filename = args.annotated
 cbs.output_scale_factor = args.scale
 cbs.pixel_mask_file = args.mask_file_name
-cbs.reference_pixels.colorspace.colorspace = args.colorspace
+cbs.color_space = ColorSpace(args.colorspace)
 cbs.ref_image_annotated_is_black_and_white = args.annotated_bw
 cbs.main(tile_list)
 
