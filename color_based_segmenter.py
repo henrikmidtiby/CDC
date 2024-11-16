@@ -43,9 +43,7 @@ from convert_orthomosaic_to_list_of_tiles import convert_orthomosaic_to_list_of_
 
 
 def convertScaleAbs(img, alpha):
-    scaled_img = alpha * img
-    for i, value in np.ndenumerate(scaled_img):
-        scaled_img[i] = min(value, 255)
+    scaled_img = np.minimum(np.abs(alpha * img), 255)
     return scaled_img
 
 
