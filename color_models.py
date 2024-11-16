@@ -11,6 +11,7 @@ class MahalanobisDistance:
     def __init__(self):
         self.average = None
         self.covariance = None
+        self.bands_to_use = None
 
     def calculate_statistics(self, reference_pixels):
         self.covariance = np.cov(reference_pixels)
@@ -21,13 +22,13 @@ class MahalanobisDistance:
         For all pixels in the image, calculate the Mahalanobis distance
         to the reference color.
         """
-        pixels = np.reshape(image, (-1, 3))
+        pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
         inv_cov = np.linalg.inv(self.covariance)
         diff = pixels - self.average
         modified_dot_product = diff * (diff @ inv_cov)
         distance = np.sum(modified_dot_product, axis=1)
         distance = np.sqrt(distance)
-        distance_image = np.reshape(distance, (image.shape[0], image.shape[1]))
+        distance_image = np.reshape(distance, (image.shape[1], image.shape[2]))
         return distance_image
 
     def show_statistics(self):

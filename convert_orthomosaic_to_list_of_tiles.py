@@ -1,6 +1,5 @@
 import os
 
-import cv2
 import numpy as np
 import rasterio
 from rasterio.windows import Window
@@ -20,19 +19,11 @@ class convert_orthomosaic_to_list_of_tiles:
         self.output_tile_location = None
         self.filename_orthomosaic = None
 
-    def rasterio_opencv2(self, image):
-        if image.shape[0] >= 3:  # might include alpha channel
-            false_color_img = image.transpose(1, 2, 0)
-            separate_colors = cv2.split(false_color_img)
-            return cv2.merge([separate_colors[2], separate_colors[1], separate_colors[0]])
-        else:
-            return image
-
     def read_tile(self, orthomosaic, tile):
         with rasterio.open(orthomosaic) as src:
             window = Window.from_slices((tile.ulc[0], tile.lrc[0]), (tile.ulc[1], tile.lrc[1]))
             im = src.read(window=window)
-        return self.rasterio_opencv2(im)
+        return im
 
     def main(self, filename_orthomosaic):
         self.filename_orthomosaic = filename_orthomosaic

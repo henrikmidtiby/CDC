@@ -33,51 +33,51 @@ import os
 import time
 from datetime import datetime
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from icecream import ic
+import rasterio
 from tqdm import tqdm
 
 from color_models import GaussianMixtureModelDistance, MahalanobisDistance
 from convert_orthomosaic_to_list_of_tiles import convert_orthomosaic_to_list_of_tiles
 
 
-class ColorSpace:
-    def __init__(self, color_space=None):
-        self.color_space = color_space if color_space is not None else "bgr"
-
-    def convert_to_selected_color_space(self, image):
-        if self.color_space == "bgr":
-            return image
-        elif self.color_space == "hsv":
-            return cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        elif self.color_space == "lab":
-            return cv2.cvtColor(image, cv2.COLOR_BGR2Lab)
-        else:
-            raise Exception("Not a supported colorspace")
+def convertScaleAbs(img, alpha):
+    scaled_img = alpha * img
+    for i, value in np.ndenumerate(scaled_img):
+        scaled_img[i] = min(value, 255)
+    return scaled_img
 
 
 class ReferencePixels:
-    def __init__(self, color_space):
+    def __init__(self):
         self.reference_image = None
-        self.annotated_image = None
-        self.pixel_mask = None
+        self.mask = None
         self.values = None
-        self.color_space = color_space
+        self.bands_to_use = None
 
     def load_reference_image(self, filename_reference_image):
-        self.reference_image = self.color_space.convert_to_selected_color_space(cv2.imread(filename_reference_image))
+        with rasterio.open(filename_reference_image) as ref_img:
+            self.reference_image = ref_img.read()
 
-    def load_annotated_image(self, filename_annotated_image):
-        self.annotated_image = cv2.imread(filename_annotated_image)
+    def load_mask(self, filename_mask):
+        with rasterio.open(filename_mask) as msk:
+            self.mask = msk.read()
 
     def generate_pixel_mask(self, lower_range=(0, 0, 245), higher_range=(10, 10, 256)):
-        ic(self.annotated_image)
-        self.pixel_mask = cv2.inRange(self.annotated_image, lower_range, higher_range)
-        pixels = np.reshape(self.reference_image, (-1, 3))
-        mask_pixels = np.reshape(self.pixel_mask, (-1))
-        self.values = pixels[mask_pixels == 255,].transpose()
+        if self.mask.shape[0] == 3:
+            pixel_mask = np.where(
+                (self.mask[0, :, :] > 245)
+                & (self.mask[0, :, :] < 256)
+                & (self.mask[1, :, :] > 0)
+                & (self.mask[1, :, :] < 10)
+                & (self.mask[2, :, :] > 0)
+                & (self.mask[2, :, :] < 10),
+                255,
+                0,
+            )
+        self.values = self.reference_image[:, pixel_mask == 255]
+        self.values = self.values[self.bands_to_use, :]
 
     def show_statistics_of_pixel_mask(self):
         print(f"Number of annotated pixels: { self.values.shape }")
@@ -90,12 +90,12 @@ class ReferencePixels:
             filename,
             self.values.transpose(),
             delimiter="\t",
-            fmt="%i",
-            header=self.color_space.color_space[0]
-            + "\t"
-            + self.color_space.color_space[1]
-            + "\t"
-            + self.color_space.color_space[2],
+            # fmt="%i",
+            # header=self.color_space.color_space[0]
+            # + "\t"
+            # + self.color_space.color_space[1]
+            # + "\t"
+            # + self.color_space.color_space[2],
             comments="",
         )
 
@@ -103,9 +103,9 @@ class ReferencePixels:
 class ColorBasedSegmenter:
     def __init__(self):
         self.output_tile_location = None
-        self.color_space = ColorSpace()
-        self.reference_pixels = ReferencePixels(self.color_space)
+        self.reference_pixels = ReferencePixels()
         self.colormodel = MahalanobisDistance()
+        self.bands_to_use = None
         self.ref_image_filename = None
         self.ref_image_annotated_filename = None
         self.ref_image_annotated_is_black_and_white = False
@@ -117,15 +117,14 @@ class ColorBasedSegmenter:
         self.initialize_color_model(self.ref_image_filename, self.ref_image_annotated_filename)
         start = time.time()
         for tile in tqdm(tile_list):
-            tile.img = self.color_space.convert_to_selected_color_space(tile.img)
             self.process_tile(tile)
         print("Time to run all tiles: ", time.time() - start)
         """start = time.time()
         with concurrent.futures.ProcessPoolExecutor() as executor:
             executor.map(self.process_tile, tile_list)
         print("Time to run all tiles: ", time.time() - start)"""
-        self.calculate_statistics(tile_list)
-        self.save_statistics()
+        # self.calculate_statistics(tile_list)
+        # self.save_statistics()
 
     def is_image_empty(self, image):
         """Helper function for deciding if an image contains no data."""
@@ -137,7 +136,10 @@ class ColorBasedSegmenter:
 
     def initialize_color_model(self, ref_image_filename, ref_image_annotated_filename):
         self.reference_pixels.load_reference_image(ref_image_filename)
-        self.reference_pixels.load_annotated_image(ref_image_annotated_filename)
+        self.reference_pixels.load_mask(ref_image_annotated_filename)
+        if self.bands_to_use is None:
+            self.bands_to_use = tuple(range(self.reference_pixels.reference_image.shape[0] - 1))
+        self.reference_pixels.bands_to_use = self.bands_to_use
         if self.ref_image_annotated_is_black_and_white:
             self.reference_pixels.generate_pixel_mask(lower_range=(245, 245, 245), higher_range=(256, 256, 256))
         else:
@@ -145,21 +147,22 @@ class ColorBasedSegmenter:
         self.reference_pixels.show_statistics_of_pixel_mask()
         self.ensure_parent_directory_exist(self.output_tile_location)
         self.reference_pixels.save_pixel_values_to_file(self.output_tile_location + "/" + self.pixel_mask_file + ".csv")
+        self.colormodel.bands_to_use = self.bands_to_use
         self.colormodel.calculate_statistics(self.reference_pixels.values)
         self.colormodel.show_statistics()
 
     def process_tile(self, tile):
         if not self.is_image_empty(tile.img):
-            distance_image = self.colormodel.calculate_distance(tile.img[:, :, :])
-            distance = cv2.convertScaleAbs(distance_image, alpha=self.output_scale_factor, beta=0)
+            distance_image = self.colormodel.calculate_distance(tile.img)
+            distance = convertScaleAbs(distance_image, alpha=self.output_scale_factor)
             distance = distance.astype(np.uint8)
             tile.img = distance
             tile.save_tile(self.output_tile_location)
 
     def calculate_statistics(self, tile_list):
-        null_dist = self.colormodel.calculate_distance(np.ones((1, 1, 3)) * 255)[0][0]
+        null_dist = self.colormodel.calculate_distance(np.ones((len(self.bands_to_use), 1, 1)) * 255)[0][0]
         for tile in tile_list:
-            if np.max(tile.img[:, :]) != np.min(tile.img[:, :]):
+            if np.max(tile.img) != np.min(tile.img):
                 image_statistics = np.histogram(tile.img, bins=256, range=(0, 255))[0]
                 # Empty pixel are not counted in the histogram.
                 # Unwanted side effect is that pixels with a similar distance will also be discarded.
@@ -170,7 +173,6 @@ class ColorBasedSegmenter:
         for x in range(0, 256):
             mean_sum += self.image_statistics[x] * x
             mean_divide += self.image_statistics[x]
-        ic(null_dist)
         self.mean_pixel_value = mean_sum / mean_divide
 
     def save_statistics(self):
@@ -289,6 +291,13 @@ parser.add_argument(
     metavar="FROM_TILE_ID TO_TILE_ID",
     help="takes two inputs like (--from_specific_tileset 16 65). This will run every tile from 16 to 65.",
 )
+parser.add_argument(
+    "--bands_to_use",
+    default=None,
+    type=int,
+    nargs="+",
+    help="The bands needed to be analysed, written as a lis, 0 indexed. If no value is specified all bands except alpha channel will be analysed.",
+)
 args = parser.parse_args()
 
 
@@ -308,7 +317,7 @@ cbs.ref_image_filename = args.reference
 cbs.ref_image_annotated_filename = args.annotated
 cbs.output_scale_factor = args.scale
 cbs.pixel_mask_file = args.mask_file_name
-cbs.color_space = ColorSpace(args.colorspace)
+cbs.bands_to_use = args.bands_to_use
 cbs.ref_image_annotated_is_black_and_white = args.annotated_bw
 cbs.main(tile_list)
 
