@@ -62,25 +62,32 @@ class ReferencePixels:
         with rasterio.open(filename_mask) as msk:
             self.mask = msk.read()
 
-    def generate_pixel_mask(self, lower_range=(0, 0, 245), higher_range=(10, 10, 256)):
+    def generate_pixel_mask(self, lower_range=(245, 0, 0), higher_range=(256, 10, 10)):
         if self.mask.shape[0] == 3:
             pixel_mask = np.where(
-                (self.mask[0, :, :] > 245)
-                & (self.mask[0, :, :] < 256)
-                & (self.mask[1, :, :] > 0)
-                & (self.mask[1, :, :] < 10)
-                & (self.mask[2, :, :] > 0)
-                & (self.mask[2, :, :] < 10),
+                (self.mask[0, :, :] > lower_range[0])
+                & (self.mask[0, :, :] < higher_range[0])
+                & (self.mask[1, :, :] > lower_range[1])
+                & (self.mask[1, :, :] < higher_range[1])
+                & (self.mask[2, :, :] > lower_range[2])
+                & (self.mask[2, :, :] < higher_range[2]),
                 255,
                 0,
             )
+        elif self.mask.shape[0] == 1:
+            pixel_mask = np.where((self.mask[0, :, :] > 128), 255, 0)
+        else:
+            raise Exception(f"Expected a Black and White or RGB image for mask but got {self.mask.shape[0]} Bands")
         self.values = self.reference_image[:, pixel_mask == 255]
         self.values = self.values[self.bands_to_use, :]
 
     def show_statistics_of_pixel_mask(self):
         print(f"Number of annotated pixels: { self.values.shape }")
-        if self.values.shape[1] < 100:
-            raise Exception("Not enough annotated pixels")
+        min_annotated_pixels = 100
+        if self.values.shape[1] <= min_annotated_pixels:
+            raise Exception(
+                f"Not enough annotated pixels. Need at least {min_annotated_pixels}, but got {self.values.shape[1]}"
+            )
 
     def save_pixel_values_to_file(self, filename):
         print(f'Writing pixel values to the file "{ filename }"')
@@ -106,7 +113,6 @@ class ColorBasedSegmenter:
         self.bands_to_use = None
         self.ref_image_filename = None
         self.ref_image_annotated_filename = None
-        self.ref_image_annotated_is_black_and_white = False
         self.output_scale_factor = None
         self.pixel_mask_file = "pixel_values"
         self.image_statistics = np.zeros(256)
@@ -138,10 +144,7 @@ class ColorBasedSegmenter:
         if self.bands_to_use is None:
             self.bands_to_use = tuple(range(self.reference_pixels.reference_image.shape[0] - 1))
         self.reference_pixels.bands_to_use = self.bands_to_use
-        if self.ref_image_annotated_is_black_and_white:
-            self.reference_pixels.generate_pixel_mask(lower_range=(245, 245, 245), higher_range=(256, 256, 256))
-        else:
-            self.reference_pixels.generate_pixel_mask()
+        self.reference_pixels.generate_pixel_mask()
         self.reference_pixels.show_statistics_of_pixel_mask()
         self.ensure_parent_directory_exist(self.output_tile_location)
         self.reference_pixels.save_pixel_values_to_file(self.output_tile_location + "/" + self.pixel_mask_file + ".csv")
@@ -271,11 +274,6 @@ parser.add_argument(
     "defaults to pixel_values (.csv is automatically added)",
 )
 parser.add_argument(
-    "--annotated_bw",
-    action="store_true",
-    help="Enable if the annotated reference image is black with white annotations instead of the default image with red annotations.",
-)
-parser.add_argument(
     "--run_specific_tile",
     nargs="+",
     type=int,
@@ -316,7 +314,6 @@ cbs.ref_image_annotated_filename = args.annotated
 cbs.output_scale_factor = args.scale
 cbs.pixel_mask_file = args.mask_file_name
 cbs.bands_to_use = args.bands_to_use
-cbs.ref_image_annotated_is_black_and_white = args.annotated_bw
 cbs.main(tile_list)
 
 
