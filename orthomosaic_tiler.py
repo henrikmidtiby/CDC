@@ -5,7 +5,7 @@ from tile import Tile
 
 
 class OrthomosaicTiles:
-    def __init__(self, orthomosaic, tile_size, run_specific_tile, run_specific_tileset, **kwargs):
+    def __init__(self, *, orthomosaic, tile_size, run_specific_tile, run_specific_tileset, **kwargs):
         self.orthomosaic = orthomosaic
         self.tile_size = tile_size
         self.overlap = 0.01
