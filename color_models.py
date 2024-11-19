@@ -42,6 +42,7 @@ class GaussianMixtureModelDistance:
     def __init__(self, n_components):
         self.gmm = None
         self.n_components = n_components
+        self.bands_to_use = None
 
     def calculate_statistics(self, reference_pixels):
         self.gmm = mixture.GaussianMixture(n_components=self.n_components, covariance_type="full")
@@ -52,9 +53,9 @@ class GaussianMixtureModelDistance:
         For all pixels in the image, calculate the distance to the
         reference color modelled as a Gaussian Mixture Model.
         """
-        pixels = np.reshape(image, (-1, 3))
+        pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
         distance = self.gmm.score_samples(pixels)
-        distance_image = np.reshape(distance, (image.shape[0], image.shape[1]))
+        distance_image = np.reshape(distance, (image.shape[1], image.shape[2]))
         return distance_image
 
     def show_statistics(self):
