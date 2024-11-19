@@ -5,7 +5,7 @@ import time
 from tqdm import tqdm
 
 from color_based_segmenter import ColorBasedSegmenter
-from color_models import GaussianMixtureModelDistance
+from color_models import GaussianMixtureModelDistance, MahalanobisDistance
 from orthomosaic_tiler import OrthomosaicTiles
 
 
@@ -86,17 +86,15 @@ def main():
     ortho_tiler = OrthomosaicTiles(**vars(args))
     tile_list = ortho_tiler.divide_orthomosaic_into_tiles()
 
-    cbs = ColorBasedSegmenter()
+    if args.method == "mahalanobis":
+        color_model = MahalanobisDistance(**vars(args))
     if args.method == "gmm":
-        cbs.colormodel = GaussianMixtureModelDistance(args.param)
-    cbs.output_tile_location = args.output_tile_location
-    cbs.ref_image_filename = args.reference
-    cbs.ref_image_annotated_filename = args.annotated
-    cbs.output_scale_factor = args.scale
-    cbs.pixel_mask_file = args.mask_file_name
-    cbs.bands_to_use = args.bands_to_use
+        color_model = GaussianMixtureModelDistance(n_components=args.param, **vars(args))
+    color_model.initialize()
+    pixels_filename = f"{args.output_tile_location}/{args.mask_file_name}.csv"
+    color_model.save_pixel_values(pixels_filename)
 
-    cbs.initialize_color_model()
+    cbs = ColorBasedSegmenter(color_model=color_model, **vars(args))
 
     start = time.time()
     for tile in tqdm(tile_list):
