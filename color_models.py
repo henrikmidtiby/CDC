@@ -28,7 +28,7 @@ class MahalanobisDistance:
         modified_dot_product = diff * (diff @ inv_cov)
         distance = np.sum(modified_dot_product, axis=1)
         distance = np.sqrt(distance)
-        distance_image = np.reshape(distance, (image.shape[1], image.shape[2]))
+        distance_image = np.reshape(distance, (1, image.shape[1], image.shape[2]))
         return distance_image
 
     def show_statistics(self):
@@ -55,7 +55,7 @@ class GaussianMixtureModelDistance:
         """
         pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
         distance = self.gmm.score_samples(pixels)
-        distance_image = np.reshape(distance, (image.shape[1], image.shape[2]))
+        distance_image = np.reshape(distance, (1, image.shape[1], image.shape[2]))
         return distance_image
 
     def show_statistics(self):
