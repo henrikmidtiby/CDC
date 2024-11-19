@@ -5,12 +5,12 @@ from tile import Tile
 
 
 class OrthomosaicTiles:
-    def __init__(self, **kwargs):
-        self.orthomosaic = kwargs["orthomosaic"]
-        self.tile_size = kwargs["tile_size"]
+    def __init__(self, orthomosaic, tile_size, run_specific_tile, run_specific_tileset, **kwargs):
+        self.orthomosaic = orthomosaic
+        self.tile_size = tile_size
         self.overlap = 0.01
-        self.run_specific_tile = kwargs["run_specific_tile"]
-        self.run_specific_tileset = kwargs["run_specific_tileset"]
+        self.run_specific_tile = run_specific_tile
+        self.run_specific_tileset = run_specific_tileset
 
     def divide_orthomosaic_into_tiles(self):
         processing_tiles = self.get_processing_tiles()
