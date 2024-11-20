@@ -40,7 +40,7 @@ class Tile:
         if not output_tile_location.is_dir():
             os.makedirs(output_tile_location)
         output_tile_filename = output_tile_location.joinpath(f"{self.tile_number:05d}.tiff")
-        new_dataset = rasterio.open(
+        with rasterio.open(
             output_tile_filename,
             "w",
             driver="GTiff",
@@ -51,9 +51,8 @@ class Tile:
             dtype=image.dtype,
             crs=self.crs,
             transform=self.transform,
-        )
-        new_dataset.write(image)
-        new_dataset.close()
+        ) as new_dataset:
+            new_dataset.write(image)
 
 
 class OrthomosaicTiles:
