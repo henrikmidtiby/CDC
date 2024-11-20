@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -60,6 +61,9 @@ class ReferencePixels:
 
     def save_pixel_values_to_file(self, filename):
         # fix header for csv file
+        output_directory = os.path.dirname(filename)
+        if not os.path.isdir(output_directory):
+            os.makedirs(output_directory)
         print(f'Writing pixel values to the file "{ filename }"')
         np.savetxt(
             filename,

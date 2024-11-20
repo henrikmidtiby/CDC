@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import rasterio
 from rasterio.transform import Affine
@@ -35,7 +37,10 @@ class Tile:
         return img, mask
 
     def save_tile(self, image, output_tile_location):
-        output_tile_filename = f"{output_tile_location}/{self.tile_number:05d}.tiff"
+        output_directory = os.path.dirname(output_tile_location)
+        if not os.path.isdir(output_directory):
+            os.makedirs(output_directory)
+        output_tile_filename = output_tile_location.joinpath(f"{self.tile_number:05d}.tiff")
         new_dataset = rasterio.open(
             output_tile_filename,
             "w",
