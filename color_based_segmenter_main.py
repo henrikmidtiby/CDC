@@ -79,8 +79,6 @@ def parse_args():
         help="takes two inputs like (--from_specific_tileset 16 65). This will run every tile from 16 to 65.",
     )
     args = parser.parse_args()
-    if not args.output_tile_location.is_dir():
-        args.output_tile_location = args.output_tile_location.joinpath("./")
     return args
 
 

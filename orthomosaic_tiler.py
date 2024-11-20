@@ -37,9 +37,8 @@ class Tile:
         return img, mask
 
     def save_tile(self, image, output_tile_location):
-        output_directory = os.path.dirname(output_tile_location)
-        if not os.path.isdir(output_directory):
-            os.makedirs(output_directory)
+        if not output_tile_location.is_dir():
+            os.makedirs(output_tile_location)
         output_tile_filename = output_tile_location.joinpath(f"{self.tile_number:05d}.tiff")
         new_dataset = rasterio.open(
             output_tile_filename,
