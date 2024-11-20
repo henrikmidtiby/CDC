@@ -25,6 +25,7 @@ class Tile:
         self.transform = Affine.translation(
             self.ulc_global[1] + self.resolution[0] / 2, self.ulc_global[0] - self.resolution[0] / 2
         ) * Affine.scale(self.resolution[0], -self.resolution[0])
+        self.output = None
 
     def read_tile(self, orthomosaic_filename):
         with rasterio.open(orthomosaic_filename) as src:
@@ -37,6 +38,7 @@ class Tile:
         return img, mask
 
     def save_tile(self, image, output_tile_location):
+        self.output = image
         if not output_tile_location.is_dir():
             os.makedirs(output_tile_location)
         output_tile_filename = output_tile_location.joinpath(f"{self.tile_number:05d}.tiff")
@@ -62,10 +64,12 @@ class OrthomosaicTiles:
         self.overlap = 0.01
         self.run_specific_tile = run_specific_tile
         self.run_specific_tileset = run_specific_tileset
+        self.tiles = None
 
     def divide_orthomosaic_into_tiles(self):
         processing_tiles = self.get_processing_tiles()
         specified_processing_tiles = self.get_list_of_specified_tiles(processing_tiles)
+        self.tiles = specified_processing_tiles
         return specified_processing_tiles
 
     def get_list_of_specified_tiles(self, tile_list):
@@ -140,3 +144,16 @@ class OrthomosaicTiles:
                     tile_c = c * step_width
                 tiles.append(Tile((tile_r, tile_c), pos, self.tile_size, self.tile_size, resolution, crs, left, top))
         return tiles, step_width, step_height
+
+    def save_orthomosaic_from_tile_output(self, orthomosaic_filename):
+        with rasterio.open(self.orthomosaic) as src:
+            profile = src.profile
+            profile["count"] = 1
+            profile["nodata"] = 255
+        with rasterio.open(orthomosaic_filename, "w", **profile) as dst:
+            for tile in self.tiles:
+                window = Window.from_slices(
+                    (tile.ulc[0], tile.lrc[0]),
+                    (tile.ulc[1], tile.lrc[1]),
+                )
+                dst.write(tile.output, window=window)

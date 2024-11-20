@@ -101,8 +101,12 @@ def main():
     for tile in tqdm(tile_list):
         img, _ = tile.read_tile(args.orthomosaic)
         distance_img = cbs.process_image(img)
-        tile.save_tile(distance_img, args.output_tile_location)
+        # tile.save_tile(distance_img, args.output_tile_location)
+        tile.output = distance_img
     print("Time to run all tiles: ", time.time() - start)
+
+    output_filename = args.output_tile_location.joinpath("vegetation_test.tiff")
+    ortho_tiler.save_orthomosaic_from_tile_output(output_filename)
 
 
 if __name__ == "__main__":
