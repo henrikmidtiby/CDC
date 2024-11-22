@@ -99,7 +99,7 @@ def main():
 
     start = time.time()
     for tile in tqdm(tile_list):
-        img, _ = tile.read_tile(args.orthomosaic)
+        img, _ = tile.read_tile(args.orthomosaic, args.bands_to_use)
         distance_img = cbs.process_image(img)
         # tile.save_tile(distance_img, args.output_tile_location)
         tile.output = distance_img

@@ -27,7 +27,7 @@ class Tile:
         ) * Affine.scale(self.resolution[0], -self.resolution[0])
         self.output = None
 
-    def read_tile(self, orthomosaic_filename):
+    def read_tile(self, orthomosaic_filename, bands_to_use):
         with rasterio.open(orthomosaic_filename) as src:
             window = Window.from_slices(
                 (self.ulc[0], self.lrc[0]),
@@ -35,6 +35,11 @@ class Tile:
             )
             img = src.read(window=window)
             mask = src.read_masks(window=window)
+            if bands_to_use is None:
+                bands_to_use = tuple(range(img.shape[0] - 1))
+            self.mask = mask[bands_to_use[0]]
+            for band in bands_to_use:
+                self.mask = self.mask & mask[band]
         return img, mask
 
     def save_tile(self, image, output_tile_location):
@@ -46,6 +51,7 @@ class Tile:
             output_tile_filename,
             "w",
             driver="GTiff",
+            nodata=255,
             res=self.resolution,
             height=self.size[0],
             width=self.size[1],
@@ -54,7 +60,9 @@ class Tile:
             crs=self.crs,
             transform=self.transform,
         ) as new_dataset:
-            new_dataset.write(image)
+            output = np.where(self.mask > 0, image, 255)
+            new_dataset.write(output)
+            new_dataset.write_mask(self.mask)
 
 
 class OrthomosaicTiles:
@@ -156,4 +164,6 @@ class OrthomosaicTiles:
                     (tile.ulc[0], tile.lrc[0]),
                     (tile.ulc[1], tile.lrc[1]),
                 )
-                dst.write(tile.output, window=window)
+                output = np.where(tile.mask > 0, tile.output, 255)
+                dst.write(output, window=window)
+                dst.write_mask(tile.mask, window=window)
