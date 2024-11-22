@@ -39,14 +39,20 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
+
+from orthomosaic_tiler import OrthomosaicTiles
 
 
-class ColorBasedSegmenter:
-    def __init__(self, *, color_model, scale, output_tile_location, **kwargs):
+class TiledColorBasedSegmenter:
+    def __init__(self, *, color_model, bands_to_use, scale, output_tile_location, **kwargs):
+        self.ortho_tiler = OrthomosaicTiles(**kwargs)
+        self.bands_to_use = bands_to_use
         self.output_tile_location = output_tile_location
         self.colormodel = color_model
         self.output_scale_factor = scale
         self.image_statistics = np.zeros(256)
+        self.ortho_tiler.divide_orthomosaic_into_tiles()
 
     def convertScaleAbs(self, img, alpha):
         scaled_img = np.minimum(np.abs(alpha * img), 255)
@@ -63,8 +69,19 @@ class ColorBasedSegmenter:
             distance = distance.astype(np.uint8)
             return distance
 
-    def calculate_statistics(self, tile_list):
-        for tile in tile_list:
+    def process_tiles(self, save_tiles=True, save_ortho=True):
+        for tile in tqdm(self.ortho_tiler.tiles):
+            img, _ = tile.read_tile(self.ortho_tiler.orthomosaic, self.bands_to_use)
+            distance_img = self.process_image(img)
+            if save_tiles:
+                tile.save_tile(distance_img, self.output_tile_location)
+            tile.output = distance_img
+        if save_ortho:
+            output_filename = self.output_tile_location.joinpath("orthomosaic.tiff")
+            self.ortho_tiler.save_orthomosaic_from_tile_output(output_filename)
+
+    def calculate_statistics(self):
+        for tile in self.ortho_tiler.tiles:
             output = np.where(tile.mask > 0, tile.output, np.nan)
             if np.max(output) != np.min(output):
                 image_statistics = np.histogram(output, bins=256, range=(0, 255))[0]

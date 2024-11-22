@@ -40,7 +40,7 @@ class Tile:
             self.mask = mask[bands_to_use[0]]
             for band in bands_to_use:
                 self.mask = self.mask & mask[band]
-        return img, mask
+        return img
 
     def save_tile(self, image, output_tile_location):
         self.output = image

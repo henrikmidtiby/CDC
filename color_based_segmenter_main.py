@@ -1,12 +1,8 @@
 import argparse
 import pathlib
-import time
 
-from tqdm import tqdm
-
-from color_based_segmenter import ColorBasedSegmenter
 from color_models import GaussianMixtureModelDistance, MahalanobisDistance
-from orthomosaic_tiler import OrthomosaicTiles
+from tiled_color_based_segmenter import TiledColorBasedSegmenter
 
 
 def parse_args():
@@ -84,9 +80,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-    ortho_tiler = OrthomosaicTiles(**vars(args))
-    tile_list = ortho_tiler.divide_orthomosaic_into_tiles()
-
     if args.method == "mahalanobis":
         color_model = MahalanobisDistance(**vars(args))
     if args.method == "gmm":
@@ -95,20 +88,10 @@ def main():
     pixels_filename = args.output_tile_location.joinpath(f"{args.mask_file_name}.csv")
     color_model.save_pixel_values(pixels_filename)
 
-    cbs = ColorBasedSegmenter(color_model=color_model, **vars(args))
-
-    start = time.time()
-    for tile in tqdm(tile_list):
-        img, _ = tile.read_tile(args.orthomosaic, args.bands_to_use)
-        distance_img = cbs.process_image(img)
-        # tile.save_tile(distance_img, args.output_tile_location)
-        tile.output = distance_img
-    print("Time to run all tiles: ", time.time() - start)
-    cbs.calculate_statistics(tile_list)
-    cbs.save_statistics(args)
-
-    output_filename = args.output_tile_location.joinpath("vegetation_test.tiff")
-    ortho_tiler.save_orthomosaic_from_tile_output(output_filename)
+    tcbs = TiledColorBasedSegmenter(color_model=color_model, **vars(args))
+    tcbs.process_tiles()
+    tcbs.calculate_statistics()
+    tcbs.save_statistics(args)
 
 
 if __name__ == "__main__":
