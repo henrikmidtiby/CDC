@@ -85,6 +85,8 @@ class BaseDistance(ABC):
     def __init__(self, **kwargs):
         self.reference_pixels = ReferencePixels(**kwargs)
         self.bands_to_use = self.reference_pixels.bands_to_use
+        self.average = None
+        self.covariance = None
 
     def initialize(self):
         self.calculate_statistics()
@@ -114,8 +116,6 @@ class MahalanobisDistance(BaseDistance):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.average = None
-        self.covariance = None
 
     def calculate_statistics(self):
         self.covariance = np.cov(self.reference_pixels.values)
@@ -151,6 +151,8 @@ class GaussianMixtureModelDistance(BaseDistance):
     def calculate_statistics(self):
         self.gmm = mixture.GaussianMixture(n_components=self.n_components, covariance_type="full")
         self.gmm.fit(self.reference_pixels.values.transpose())
+        self.average = self.gmm.means_
+        self.covariance = self.gmm.covariances_
 
     def calculate_distance(self, image):
         """
@@ -158,8 +160,9 @@ class GaussianMixtureModelDistance(BaseDistance):
         reference color modelled as a Gaussian Mixture Model.
         """
         pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
-        distance = self.gmm.score_samples(pixels)
-        distance_image = np.reshape(distance, (1, image.shape[1], image.shape[2]))
+        loglikelihood = self.gmm.score_samples(pixels)
+        # distance = np.exp(loglikelihood) # to make the values positive.
+        distance_image = np.reshape(loglikelihood, (1, image.shape[1], image.shape[2]))
         return distance_image
 
     def show_statistics(self):

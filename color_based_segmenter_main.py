@@ -104,6 +104,8 @@ def main():
         # tile.save_tile(distance_img, args.output_tile_location)
         tile.output = distance_img
     print("Time to run all tiles: ", time.time() - start)
+    cbs.calculate_statistics(tile_list)
+    cbs.save_statistics(args)
 
     output_filename = args.output_tile_location.joinpath("vegetation_test.tiff")
     ortho_tiler.save_orthomosaic_from_tile_output(output_filename)

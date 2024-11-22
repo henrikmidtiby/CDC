@@ -34,17 +34,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # bw finds more pixels so maybe this should be addressed.
 # BW: 3552 RGB: 316
 
-# import matplotlib.pyplot as plt
+import os
+from datetime import datetime
+
+import matplotlib.pyplot as plt
 import numpy as np
 
 
 class ColorBasedSegmenter:
-    def __init__(self, *, color_model, bands_to_use, scale, output_tile_location, mask_file_name, **kwargs):
+    def __init__(self, *, color_model, scale, output_tile_location, **kwargs):
         self.output_tile_location = output_tile_location
         self.colormodel = color_model
-        self.bands_to_use = bands_to_use
         self.output_scale_factor = scale
-        self.pixel_mask_file = mask_file_name
         self.image_statistics = np.zeros(256)
 
     def convertScaleAbs(self, img, alpha):
@@ -59,56 +60,52 @@ class ColorBasedSegmenter:
         if not self.is_image_empty(image):
             distance_image = self.colormodel.calculate_distance(image)
             distance = self.convertScaleAbs(distance_image, alpha=self.output_scale_factor)
-            # distance = distance.astype(np.uint8)
+            distance = distance.astype(np.uint8)
             return distance
 
-    # def calculate_statistics(self, tile_list):
-    #     null_dist = self.colormodel.calculate_distance(
-    #         np.ones((self.reference_pixels.reference_image.shape[0], 1, 1)) * 255
-    #     )[0][0]
-    #     for tile in tile_list:
-    #         if np.max(tile.img) != np.min(tile.img):
-    #             image_statistics = np.histogram(tile.img, bins=256, range=(0, 255))[0]
-    #             ic(image_statistics.shape)
-    #             # Empty pixel are not counted in the histogram.
-    #             # Unwanted side effect is that pixels with a similar distance will also be discarded.
-    #             image_statistics[int(null_dist * self.output_scale_factor)] = 0
-    #             self.image_statistics += image_statistics
-    #     mean_divide = 0
-    #     mean_sum = 0
-    #     for x in range(0, 256):
-    #         mean_sum += self.image_statistics[x] * x
-    #         mean_divide += self.image_statistics[x]
-    #     self.mean_pixel_value = mean_sum / mean_divide
+    def calculate_statistics(self, tile_list):
+        for tile in tile_list:
+            output = np.where(tile.mask > 0, tile.output, np.nan)
+            if np.max(output) != np.min(output):
+                image_statistics = np.histogram(output, bins=256, range=(0, 255))[0]
+                self.image_statistics += image_statistics
+        mean_divide = 0
+        mean_sum = 0
+        for x in range(0, 256):
+            mean_sum += self.image_statistics[x] * x
+            mean_divide += self.image_statistics[x]
+        self.mean_pixel_value = mean_sum / mean_divide
 
-    # def save_statistics(self):
-    #     statistics_path = self.output_tile_location + "/statistics"
-    #     self.ensure_parent_directory_exist(statistics_path)
-    #     print(f'Writing statistics to the folder "{ statistics_path }"')
-    #     # Plot histogram of pixel values
-    #     plt.plot(self.image_statistics)
-    #     plt.title("Histogram of pixel values")
-    #     plt.xlabel("Pixel Value")
-    #     plt.ylabel("Number of Pixels")
-    #     plt.savefig(statistics_path + "/Histogram of pixel values", dpi=300)
-    #     plt.close()
-    #     with open(statistics_path + "/output_file.txt", "w") as f:
-    #         f.write("Input parameters:\n")
-    #         f.write(f" - Orthomosaic: {args.orthomosaic}\n")
-    #         f.write(f" - Reference image: {args.reference}\n")
-    #         f.write(f" - Annotated image: {args.annotated}\n")
-    #         f.write(f" - Output scale factor: {args.scale}\n")
-    #         f.write(f" - Tile sizes: {args.tile_size}\n")
-    #         f.write(f" - Output tile location: {args.output_tile_location}\n")
-    #         f.write(f" - Method: {args.method}\n")
-    #         f.write(f" - Parameter: {args.param}\n")
-    #         f.write(f" - Colorspace: {args.colorspace}\n")
-    #         f.write(f" - Pixel mask file: {args.mask_file_name}\n")
-    #         f.write(f" - Date and time of execution: {datetime.now().replace(microsecond=0)}\n")
-    #         f.write("\n\nOutput from run\n")
-    #         f.write(" - Average color value of annotated pixels\n")
-    #         f.write(f" - {self.colormodel.average}\n")
-    #         f.write(" - Covariance matrix of the annotated pixels\n")
-    #         f.write(" - " + str(self.colormodel.covariance).replace("\n", "\n   ") + "\n")
-    #         f.write(f" - Mean pixel value: {self.mean_pixel_value}\n")
-    #         f.write(f" - Number of tiles: {len(tile_list)}\n")
+    def save_statistics(self, args):
+        statistics_path = self.output_tile_location.joinpath("statistics")
+        print(f'Writing statistics to the folder "{ statistics_path }"')
+        # Plot histogram of pixel values
+        plt.plot(self.image_statistics)
+        plt.title("Histogram of pixel values")
+        plt.xlabel("Pixel Value")
+        plt.ylabel("Number of Pixels")
+        histrogram_filename = statistics_path.joinpath("Histogram of pixel values")
+        output_directory = os.path.dirname(histrogram_filename)
+        if not os.path.isdir(output_directory):
+            os.makedirs(output_directory)
+        plt.savefig(histrogram_filename, dpi=300)
+        plt.close()
+        with open(statistics_path.joinpath("output_file.txt"), "w") as f:
+            f.write("Input parameters:\n")
+            f.write(f" - Orthomosaic: {args.orthomosaic}\n")
+            f.write(f" - Reference image: {args.reference}\n")
+            f.write(f" - Annotated image: {args.annotated}\n")
+            f.write(f" - Output scale factor: {args.scale}\n")
+            f.write(f" - Tile sizes: {args.tile_size}\n")
+            f.write(f" - Output tile location: {args.output_tile_location}\n")
+            f.write(f" - Method: {args.method}\n")
+            f.write(f" - Parameter: {args.param}\n")
+            f.write(f" - Pixel mask file: {args.mask_file_name}\n")
+            f.write(f" - Date and time of execution: {datetime.now().replace(microsecond=0)}\n")
+            f.write("\n\nOutput from run\n")
+            f.write(" - Average color value of annotated pixels\n")
+            f.write(f" - {self.colormodel.average}\n")
+            f.write(" - Covariance matrix of the annotated pixels\n")
+            f.write(" - " + str(self.colormodel.covariance).replace("\n", "\n   ") + "\n")
+            f.write(f" - Mean pixel value: {self.mean_pixel_value}\n")
+            # f.write(f" - Number of tiles: {len(tile_list)}\n")
