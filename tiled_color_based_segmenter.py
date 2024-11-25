@@ -58,16 +58,11 @@ class TiledColorBasedSegmenter:
         scaled_img = np.minimum(np.abs(alpha * img), 255)
         return scaled_img
 
-    def is_image_empty(self, image):
-        """Helper function for deciding if an image contains no data."""
-        return np.max(image[:, :, 0]) == np.min(image[:, :, 0])
-
     def process_image(self, image):
-        if not self.is_image_empty(image):
-            distance_image = self.colormodel.calculate_distance(image)
-            distance = self.convertScaleAbs(distance_image, alpha=self.output_scale_factor)
-            distance = distance.astype(np.uint8)
-            return distance
+        distance_image = self.colormodel.calculate_distance(image)
+        distance = self.convertScaleAbs(distance_image, alpha=self.output_scale_factor)
+        distance = distance.astype(np.uint8)
+        return distance
 
     def process_tiles(self, save_tiles=True, save_ortho=True):
         for tile in tqdm(self.ortho_tiler.tiles):
