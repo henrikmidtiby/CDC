@@ -71,7 +71,7 @@ class TiledColorBasedSegmenter:
 
     def process_tiles(self, save_tiles=True, save_ortho=True):
         for tile in tqdm(self.ortho_tiler.tiles):
-            img, _ = tile.read_tile(self.ortho_tiler.orthomosaic, self.bands_to_use)
+            img = tile.read_tile(self.ortho_tiler.orthomosaic, self.bands_to_use)
             distance_img = self.process_image(img)
             if save_tiles:
                 tile.save_tile(distance_img, self.output_tile_location)
