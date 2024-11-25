@@ -45,7 +45,7 @@ class ReferencePixels:
                 0,
             )
         elif self.mask.shape[0] == 1:
-            pixel_mask = np.where((self.mask[0, :, :] > 128), 255, 0)
+            pixel_mask = np.where((self.mask[0, :, :] > 127), 255, 0)
         else:
             raise Exception(f"Expected a Black and White or RGB image for mask but got {self.mask.shape[0]} Bands")
         self.values = self.reference_image[:, pixel_mask == 255]
