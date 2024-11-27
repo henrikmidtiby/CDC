@@ -1,15 +1,18 @@
 import os
+import pathlib
 from abc import ABC, abstractmethod
+from typing import Any
 
 import numpy as np
 import rasterio  # type: ignore[import-untyped]
+from numpy.typing import NDArray
 from sklearn import mixture  # type: ignore[import-untyped]
 
-from typing import Any
-from numpy.typing import NDArray
 
 class ReferencePixels:
-    def __init__(self, *, reference: NDArray[Any], annotated: NDArray[Any], bands_to_use: tuple[int, ...] | None, **kwargs):
+    def __init__(
+        self, *, reference: pathlib.Path, annotated: pathlib.Path, bands_to_use: tuple[int, ...] | None, **kwargs: Any
+    ):
         self.reference_image_filename = reference
         self.mask_filename = annotated
         self.bands_to_use: tuple[int, ...] | None = bands_to_use
@@ -18,7 +21,7 @@ class ReferencePixels:
         self.values: NDArray[Any] = np.zeros(0)
         self.initialize()
 
-    def initialize(self):
+    def initialize(self) -> None:
         self.load_reference_image(self.reference_image_filename)
         self.load_mask(self.mask_filename)
         if self.bands_to_use is None:
@@ -26,16 +29,18 @@ class ReferencePixels:
         self.generate_pixel_mask()
         self.show_statistics_of_pixel_mask()
 
-    def load_reference_image(self, filename_reference_image):
+    def load_reference_image(self, filename_reference_image: pathlib.Path) -> None:
         with rasterio.open(filename_reference_image) as ref_img:
             self.reference_image = ref_img.read()
 
-    def load_mask(self, filename_mask):
+    def load_mask(self, filename_mask: pathlib.Path) -> None:
         with rasterio.open(filename_mask) as msk:
             self.mask = msk.read()
 
-    def generate_pixel_mask(self, lower_range=(245, 0, 0), higher_range=(256, 10, 10)):
-        if self.mask.shape[0] == 3:
+    def generate_pixel_mask(
+        self, lower_range: tuple[int, int, int] = (245, 0, 0), higher_range: tuple[int, int, int] = (256, 10, 10)
+    ) -> None:
+        if self.mask.shape[0] == 3 or self.mask.shape[0] == 4:
             pixel_mask = np.where(
                 (self.mask[0, :, :] > lower_range[0])
                 & (self.mask[0, :, :] < higher_range[0])
@@ -53,7 +58,7 @@ class ReferencePixels:
         self.values = self.reference_image[:, pixel_mask == 255]
         self.values = self.values[self.bands_to_use, :]
 
-    def show_statistics_of_pixel_mask(self):
+    def show_statistics_of_pixel_mask(self) -> None:
         print(f"Number of annotated pixels: { self.values.shape }")
         min_annotated_pixels = 100
         if self.values.shape[1] <= min_annotated_pixels:
@@ -61,7 +66,7 @@ class ReferencePixels:
                 f"Not enough annotated pixels. Need at least {min_annotated_pixels}, but got {self.values.shape[1]}"
             )
 
-    def save_pixel_values_to_file(self, filename):
+    def save_pixel_values_to_file(self, filename: pathlib.Path) -> None:
         # fix header for csv file
         output_directory = os.path.dirname(filename)
         if not os.path.isdir(output_directory):
@@ -84,29 +89,27 @@ class ReferencePixels:
 class BaseDistance(ABC):
     """Base class for all color distance models."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         self.reference_pixels = ReferencePixels(**kwargs)
         self.bands_to_use = self.reference_pixels.bands_to_use
-        self.average = None
-        self.covariance = None
 
-    def initialize(self):
+    def initialize(self) -> None:
         self.calculate_statistics()
         self.show_statistics()
 
-    def save_pixel_values(self, filename):
+    def save_pixel_values(self, filename: pathlib.Path) -> None:
         self.reference_pixels.save_pixel_values_to_file(filename)
 
     @abstractmethod
-    def calculate_statistics(self):
+    def calculate_statistics(self) -> None:
         pass
 
     @abstractmethod
-    def calculate_distance(self, image):
+    def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
         pass
 
     @abstractmethod
-    def show_statistics(self):
+    def show_statistics(self) -> None:
         pass
 
 
@@ -116,14 +119,14 @@ class MahalanobisDistance(BaseDistance):
     pixels.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
 
-    def calculate_statistics(self):
+    def calculate_statistics(self) -> None:
         self.covariance: NDArray[Any] = np.cov(self.reference_pixels.values)
         self.average = np.average(self.reference_pixels.values, axis=1)
 
-    def calculate_distance(self, image):
+    def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
         """
         For all pixels in the image, calculate the Mahalanobis distance
         to the reference color.
@@ -138,7 +141,7 @@ class MahalanobisDistance(BaseDistance):
         distance_image = np.reshape(distance, (1, image.shape[1], image.shape[2]))
         return distance_image
 
-    def show_statistics(self):
+    def show_statistics(self) -> None:
         print("Average color value of annotated pixels")
         print(self.average)
         print("Covariance matrix of the annotated pixels")
@@ -146,18 +149,17 @@ class MahalanobisDistance(BaseDistance):
 
 
 class GaussianMixtureModelDistance(BaseDistance):
-    def __init__(self, n_components, **kwargs):
+    def __init__(self, n_components: int, **kwargs: Any):
         super().__init__(**kwargs)
         self.n_components = n_components
-        self.gmm = None
 
-    def calculate_statistics(self):
+    def calculate_statistics(self) -> None:
         self.gmm = mixture.GaussianMixture(n_components=self.n_components, covariance_type="full")
         self.gmm.fit(self.reference_pixels.values.transpose())
         self.average = self.gmm.means_
         self.covariance = self.gmm.covariances_
 
-    def calculate_distance(self, image):
+    def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
         """
         For all pixels in the image, calculate the distance to the
         reference color modelled as a Gaussian Mixture Model.
@@ -169,7 +171,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         distance_image = np.reshape(loglikelihood, (1, image.shape[1], image.shape[2]))
         return distance_image
 
-    def show_statistics(self):
+    def show_statistics(self) -> None:
         print("GMM")
         print(self.gmm)
         print(self.gmm.means_)
