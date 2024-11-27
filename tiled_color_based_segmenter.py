@@ -35,17 +35,28 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # BW: 3552 RGB: 316
 
 import os
+import pathlib
 from datetime import datetime
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
+from color_models import BaseDistance
 from orthomosaic_tiler import OrthomosaicTiles
 
 
 class TiledColorBasedSegmenter:
-    def __init__(self, *, color_model, bands_to_use, scale, output_tile_location, **kwargs):
+    def __init__(
+        self,
+        *,
+        color_model: BaseDistance,
+        bands_to_use: Any,
+        scale: float,
+        output_tile_location: pathlib.Path,
+        **kwargs: Any,
+    ):
         self.ortho_tiler = OrthomosaicTiles(**kwargs)
         self.bands_to_use = bands_to_use
         self.output_tile_location = output_tile_location
