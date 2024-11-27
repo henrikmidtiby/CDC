@@ -85,7 +85,6 @@ def main() -> None:
         color_model: BaseDistance = MahalanobisDistance(**vars(args))
     if args.method == "gmm":
         color_model = GaussianMixtureModelDistance(n_components=args.param, **vars(args))
-    color_model.initialize()
     pixels_filename = args.output_tile_location.joinpath(f"{args.mask_file_name}.csv")
     color_model.save_pixel_values(pixels_filename)
 

@@ -94,6 +94,7 @@ class BaseDistance(ABC):
         self.bands_to_use = self.reference_pixels.bands_to_use
         self.covariance: NDArray[Any]
         self.average: float
+        self.initialize()
 
     def initialize(self) -> None:
         self.calculate_statistics()
@@ -152,8 +153,8 @@ class MahalanobisDistance(BaseDistance):
 
 class GaussianMixtureModelDistance(BaseDistance):
     def __init__(self, n_components: int, **kwargs: Any):
-        super().__init__(**kwargs)
         self.n_components = n_components
+        super().__init__(**kwargs)
 
     def calculate_statistics(self) -> None:
         self.gmm = mixture.GaussianMixture(n_components=self.n_components, covariance_type="full")
