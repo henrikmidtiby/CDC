@@ -1,11 +1,12 @@
 import argparse
 import pathlib
+from typing import Any
 
-from color_models import GaussianMixtureModelDistance, MahalanobisDistance, BaseDistance
+from color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
 from tiled_color_based_segmenter import TiledColorBasedSegmenter
 
 
-def parse_args():
+def parse_args() -> Any:
     parser = argparse.ArgumentParser(
         prog="ColorDistranceCalculatorForOrthomosaics",
         description="A tool for calculating color distances in an "
@@ -78,7 +79,7 @@ def parse_args():
     return args
 
 
-def main():
+def main() -> None:
     args = parse_args()
     if args.method == "mahalanobis":
         color_model: BaseDistance = MahalanobisDistance(**vars(args))
