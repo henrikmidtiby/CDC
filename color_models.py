@@ -160,6 +160,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         self.gmm.fit(self.reference_pixels.values.transpose())
         self.average = self.gmm.means_
         self.covariance = self.gmm.covariances_
+        self.min_score = np.min(-self.gmm.score_samples(self.average))
 
     def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
         """
@@ -168,13 +169,13 @@ class GaussianMixtureModelDistance(BaseDistance):
         """
         assert self.bands_to_use is not None
         pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
-        loglikelihood = self.gmm.score_samples(pixels)
-        # distance = np.exp(loglikelihood) # to make the values positive.
-        distance_image = np.reshape(loglikelihood, (1, image.shape[1], image.shape[2]))
+        loglikelihood = -self.gmm.score_samples(pixels)
+        distance = np.sqrt(loglikelihood - self.min_score)
+        distance_image = np.reshape(distance, (1, image.shape[1], image.shape[2]))
         return distance_image
 
     def show_statistics(self) -> None:
         print("GMM")
         print(self.gmm)
-        print(self.gmm.means_)
-        print(self.gmm.covariances_)
+        print(self.average)
+        print(self.covariance)
