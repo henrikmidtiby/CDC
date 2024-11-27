@@ -23,7 +23,7 @@ def parse_args():
         default=None,
         type=int,
         nargs="+",
-        help="The bands needed to be analysed, written as a lis, 0 indexed. If no value is specified all bands except alpha channel will be analysed.",
+        help="The bands needed to be analysed, written as a list, 0 indexed. If no value is specified all bands except alpha channel will be analysed.",
     )
     parser.add_argument(
         "--scale",
