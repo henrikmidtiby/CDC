@@ -1,9 +1,9 @@
+from collections.abc import Callable
+from typing import Any
+
 import matplotlib.pyplot as plt
 import mplcursors  # type: ignore[import-not-found]
 import numpy as np
-
-from typing import Any
-
 from numpy.typing import NDArray
 
 
@@ -14,15 +14,22 @@ class ROC:
         self.true_negative: list[int] = []
         self.false_negative: list[int] = []
         self.thresholds: list[Any] = []
-        self.true_positives_rate = []
-        self.false_positives_rate = []
-        self.precision = None
+        self.true_positives_rate: NDArray[Any] = np.zeros(0)
+        self.false_positives_rate: NDArray[Any] = np.zeros(0)
+        self.precision: NDArray[Any] = np.zeros(0)
 
     # arguments must be numpy arrays
-    def get_points(self, analysed_image, test_positive, test_negative, number_of_samples, model=None):
+    def get_points(
+        self,
+        analysed_image: NDArray[Any],
+        test_positive: NDArray[Any],
+        test_negative: NDArray[Any],
+        number_of_samples: int,
+        model: Callable[[Any], Any] | None = None,
+    ) -> None:
         if model is None:
 
-            def model(value):
+            def model(value: Any) -> Any:
                 return value
 
         analysed_image_temp = np.reshape(analysed_image, -1)
@@ -54,7 +61,9 @@ class ROC:
             self.false_negative.append(false_negative)
             self.thresholds.append(threshold)
 
-    def distance_to_points(self, analysed_image, test_positive, test_negative):
+    def distance_to_points(
+        self, analysed_image: NDArray[Any], test_positive: NDArray[Any], test_negative: NDArray[Any]
+    ) -> None:
         positive_mask = np.reshape(test_positive, (-1))
         negative_mask = np.reshape(test_negative, (-1))
 
@@ -103,13 +112,12 @@ class ROC:
 
         # return self.points
 
-    def calculate_rates(self):
+    def calculate_rates(self) -> None:
         self.true_positives_rate = np.divide(self.true_positive, (np.add(self.true_positive, self.false_negative)))
         self.false_positives_rate = np.divide(self.false_positive, (np.add(self.false_positive, self.true_negative)))
         self.precision = np.divide(self.true_positive, (np.add(self.true_positive, self.false_positive)))
-        return 1
 
-    def calculate_area_under_graph(self):
+    def calculate_area_under_graph(self) -> float:
         area = 0
         for i in range(len(self.thresholds) - 1):
             area += (
@@ -119,7 +127,7 @@ class ROC:
             )
         return area
 
-    def plot_ROC(self, options):
+    def plot_ROC(self, options: str | None) -> None:
         match options:
             case None | "FPR":
                 x = self.false_positives_rate
@@ -151,8 +159,8 @@ class ROC:
         cursor = mplcursors.cursor(sc, hover=True)
 
         # Define what happens when hovering over a point
-        @cursor.connect("add")
-        def on_add(sel):
+        @cursor.connect("add")  # type: ignore[misc]
+        def on_add(sel: Any) -> None:
             # Display the value from the threshold array
             sel.annotation.set(text=f"threshold={self.thresholds[sel.index]:.3f}")
 

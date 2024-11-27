@@ -1,17 +1,25 @@
 import argparse
+import pathlib
+from typing import Any
 
 import rasterio  # type: ignore[import-untyped]
+from numpy.typing import NDArray
 
 import ROC.ROC as ROC
 
 
-def get_img_from_tiff(path):
+def get_img_from_tiff(path: pathlib.Path) -> NDArray[Any]:
     with rasterio.open(path) as src:
         im = src.read()
     return im
 
 
-def run_ROC(path_to_distance_img, path_to_pos_mask, path_to_neg_mask, plot_options):
+def run_ROC(
+    path_to_distance_img: pathlib.Path,
+    path_to_pos_mask: pathlib.Path,
+    path_to_neg_mask: pathlib.Path,
+    plot_options: str,
+) -> None:
     distance_img = get_img_from_tiff(path_to_distance_img)
     true_positive = get_img_from_tiff(path_to_pos_mask)
     true_negative = get_img_from_tiff(path_to_neg_mask)
