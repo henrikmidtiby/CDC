@@ -3,4 +3,5 @@ data/pumpkins_example/tiles/
 Tests/
 OCDC.zip
 venv
+env/
 __pycache__/
