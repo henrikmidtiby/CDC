@@ -92,6 +92,8 @@ class BaseDistance(ABC):
     def __init__(self, **kwargs: Any):
         self.reference_pixels = ReferencePixels(**kwargs)
         self.bands_to_use = self.reference_pixels.bands_to_use
+        self.covariance: NDArray[Any]
+        self.average: float
 
     def initialize(self) -> None:
         self.calculate_statistics()

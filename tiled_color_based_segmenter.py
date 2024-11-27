@@ -41,6 +41,7 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import NDArray
 from tqdm import tqdm
 
 from color_models import BaseDistance
@@ -65,17 +66,17 @@ class TiledColorBasedSegmenter:
         self.image_statistics = np.zeros(256)
         self.ortho_tiler.divide_orthomosaic_into_tiles()
 
-    def convertScaleAbs(self, img, alpha):
+    def convertScaleAbs(self, img: NDArray[Any], alpha: float) -> NDArray[Any]:
         scaled_img = np.minimum(np.abs(alpha * img), 255)
         return scaled_img
 
-    def process_image(self, image):
+    def process_image(self, image: NDArray[Any]) -> NDArray[Any]:
         distance_image = self.colormodel.calculate_distance(image)
         distance = self.convertScaleAbs(distance_image, alpha=self.output_scale_factor)
         distance = distance.astype(np.uint8)
         return distance
 
-    def process_tiles(self, save_tiles=True, save_ortho=True):
+    def process_tiles(self, save_tiles: bool = True, save_ortho: bool = True) -> None:
         for tile in tqdm(self.ortho_tiler.tiles):
             img = tile.read_tile(self.ortho_tiler.orthomosaic, self.bands_to_use)
             distance_img = self.process_image(img)
@@ -86,7 +87,7 @@ class TiledColorBasedSegmenter:
             output_filename = self.output_tile_location.joinpath("orthomosaic.tiff")
             self.ortho_tiler.save_orthomosaic_from_tile_output(output_filename)
 
-    def calculate_statistics(self):
+    def calculate_statistics(self) -> None:
         for tile in self.ortho_tiler.tiles:
             output = np.where(tile.mask > 0, tile.output, np.nan)
             if np.max(output) != np.min(output):
@@ -99,7 +100,7 @@ class TiledColorBasedSegmenter:
             mean_divide += self.image_statistics[x]
         self.mean_pixel_value = mean_sum / mean_divide
 
-    def save_statistics(self, args):
+    def save_statistics(self, args: Any) -> None:
         statistics_path = self.output_tile_location.joinpath("statistics")
         print(f'Writing statistics to the folder "{ statistics_path }"')
         # Plot histogram of pixel values
@@ -126,6 +127,8 @@ class TiledColorBasedSegmenter:
             f.write(f" - Pixel mask file: {args.mask_file_name}\n")
             f.write(f" - Date and time of execution: {datetime.now().replace(microsecond=0)}\n")
             f.write("\n\nOutput from run\n")
+            # TODO: Add support for GMM models so their parameters can also be saved
+            # in the output_file.txt.
             f.write(" - Average color value of annotated pixels\n")
             f.write(f" - {self.colormodel.average}\n")
             f.write(" - Covariance matrix of the annotated pixels\n")
