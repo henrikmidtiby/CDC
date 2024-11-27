@@ -28,12 +28,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# fix make it print less and only what makes sense.
-# all other can be saved as output or maybe add an arg to verbose.
-
-# bw finds more pixels so maybe this should be addressed.
-# BW: 3552 RGB: 316
-
 import os
 import pathlib
 from datetime import datetime
