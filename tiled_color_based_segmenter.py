@@ -134,4 +134,4 @@ class TiledColorBasedSegmenter:
             f.write(" - Covariance matrix of the annotated pixels\n")
             f.write(" - " + str(self.colormodel.covariance).replace("\n", "\n   ") + "\n")
             f.write(f" - Mean pixel value: {self.mean_pixel_value}\n")
-            # f.write(f" - Number of tiles: {len(tile_list)}\n")
+            f.write(f" - Number of tiles: {len(self.ortho_tiler.tiles)}\n")
