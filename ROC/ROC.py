@@ -1,17 +1,21 @@
 import matplotlib.pyplot as plt
-import mplcursors
+import mplcursors  # type: ignore[import-not-found]
 import numpy as np
+
+from typing import Any
+
+from numpy.typing import NDArray
 
 
 class ROC:
     def __init__(self) -> None:
-        self.true_positive = []
-        self.false_positive = []
-        self.true_negative = []
-        self.false_negative = []
-        self.thresholds = []
-        self.true_positives_rate = None
-        self.false_positives_rate = None
+        self.true_positive: list[int] = []
+        self.false_positive: list[int] = []
+        self.true_negative: list[int] = []
+        self.false_negative: list[int] = []
+        self.thresholds: list[Any] = []
+        self.true_positives_rate = []
+        self.false_positives_rate = []
         self.precision = None
 
     # arguments must be numpy arrays

@@ -2,18 +2,20 @@ import os
 from abc import ABC, abstractmethod
 
 import numpy as np
-import rasterio
-from sklearn import mixture
+import rasterio  # type: ignore[import-untyped]
+from sklearn import mixture  # type: ignore[import-untyped]
 
+from typing import Any
+from numpy.typing import NDArray
 
 class ReferencePixels:
-    def __init__(self, *, reference, annotated, bands_to_use, **kwargs):
+    def __init__(self, *, reference: NDArray[Any], annotated: NDArray[Any], bands_to_use: tuple[int, ...] | None, **kwargs):
         self.reference_image_filename = reference
         self.mask_filename = annotated
-        self.bands_to_use = bands_to_use
-        self.reference_image = None
-        self.mask = None
-        self.values = None
+        self.bands_to_use: tuple[int, ...] | None = bands_to_use
+        self.reference_image: NDArray[Any] = np.zeros(0)
+        self.mask: NDArray[Any] = np.zeros(0)
+        self.values: NDArray[Any] = np.zeros(0)
         self.initialize()
 
     def initialize(self):
@@ -118,7 +120,7 @@ class MahalanobisDistance(BaseDistance):
         super().__init__(**kwargs)
 
     def calculate_statistics(self):
-        self.covariance = np.cov(self.reference_pixels.values)
+        self.covariance: NDArray[Any] = np.cov(self.reference_pixels.values)
         self.average = np.average(self.reference_pixels.values, axis=1)
 
     def calculate_distance(self, image):
@@ -126,6 +128,7 @@ class MahalanobisDistance(BaseDistance):
         For all pixels in the image, calculate the Mahalanobis distance
         to the reference color.
         """
+        assert self.bands_to_use is not None
         pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
         inv_cov = np.linalg.inv(self.covariance)
         diff = pixels - self.average
@@ -159,6 +162,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         For all pixels in the image, calculate the distance to the
         reference color modelled as a Gaussian Mixture Model.
         """
+        assert self.bands_to_use is not None
         pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
         loglikelihood = self.gmm.score_samples(pixels)
         # distance = np.exp(loglikelihood) # to make the values positive.

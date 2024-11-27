@@ -1,6 +1,6 @@
 import argparse
 
-import rasterio
+import rasterio  # type: ignore[import-untyped]
 
 import ROC.ROC as ROC
 

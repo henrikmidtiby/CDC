@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 
-from color_models import GaussianMixtureModelDistance, MahalanobisDistance
+from color_models import GaussianMixtureModelDistance, MahalanobisDistance, BaseDistance
 from tiled_color_based_segmenter import TiledColorBasedSegmenter
 
 
@@ -81,7 +81,7 @@ def parse_args():
 def main():
     args = parse_args()
     if args.method == "mahalanobis":
-        color_model = MahalanobisDistance(**vars(args))
+        color_model: BaseDistance = MahalanobisDistance(**vars(args))
     if args.method == "gmm":
         color_model = GaussianMixtureModelDistance(n_components=args.param, **vars(args))
     color_model.initialize()

@@ -1,9 +1,13 @@
 import os
 
+
+
 import numpy as np
-import rasterio
-from rasterio.transform import Affine
-from rasterio.windows import Window
+from numpy.typing import NDArray
+from typing import Any
+import rasterio  # type: ignore[import-untyped]
+from rasterio.transform import Affine  # type: ignore[import-untyped]
+from rasterio.windows import Window  # type: ignore[import-untyped]
 
 
 class Tile:
@@ -25,7 +29,8 @@ class Tile:
         self.transform = Affine.translation(
             self.ulc_global[1] + self.resolution[0] / 2, self.ulc_global[0] - self.resolution[0] / 2
         ) * Affine.scale(self.resolution[0], -self.resolution[0])
-        self.output = None
+        self.tile_number = None
+        self.output: NDArray[Any] = np.zeros(0)
 
     def read_tile(self, orthomosaic_filename, bands_to_use):
         with rasterio.open(orthomosaic_filename) as src:
@@ -72,7 +77,7 @@ class OrthomosaicTiles:
         self.overlap = 0.01
         self.run_specific_tile = run_specific_tile
         self.run_specific_tileset = run_specific_tileset
-        self.tiles = None
+        self.tiles: list[Tile] = []
 
     def divide_orthomosaic_into_tiles(self):
         processing_tiles = self.get_processing_tiles()

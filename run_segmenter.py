@@ -1,8 +1,8 @@
-import Segmenter.segmenter as segmenter
-import Segmenter.tiler as tiler
-import Segmenter.colormodels as colormodels
+import Segmenter.segmenter as segmenter  # type: ignore[import-not-found]
+import Segmenter.tiler as tiler  # type: ignore[import-not-found]
+import Segmenter.colormodels as colormodels  # type: ignore[import-not-found]
 import argparse
-import Segmenter.transform as transform
+import Segmenter.transform as transform  # type: ignore[import-not-found]
 import numpy as np
 
 
