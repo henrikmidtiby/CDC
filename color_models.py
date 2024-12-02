@@ -8,14 +8,23 @@ import rasterio  # type: ignore[import-untyped]
 from numpy.typing import NDArray
 from sklearn import mixture  # type: ignore[import-untyped]
 
+from transforms import BaseTransformer
+
 
 class ReferencePixels:
     def __init__(
-        self, *, reference: pathlib.Path, annotated: pathlib.Path, bands_to_use: tuple[int, ...] | None, **kwargs: Any
+        self,
+        *,
+        reference: pathlib.Path,
+        annotated: pathlib.Path,
+        bands_to_use: tuple[int, ...] | None,
+        transform: BaseTransformer | None,
+        **kwargs: Any,
     ):
         self.reference_image_filename = reference
         self.mask_filename = annotated
         self.bands_to_use: tuple[int, ...] | None = bands_to_use
+        self.transform: BaseTransformer | None = transform
         self.reference_image: NDArray[Any] = np.zeros(0)
         self.mask: NDArray[Any] = np.zeros(0)
         self.values: NDArray[Any] = np.zeros(0)
@@ -32,6 +41,8 @@ class ReferencePixels:
     def load_reference_image(self, filename_reference_image: pathlib.Path) -> None:
         with rasterio.open(filename_reference_image) as ref_img:
             self.reference_image = ref_img.read()
+        if self.transform is not None:
+            self.reference_image = self.transform.transform(self.reference_image)
 
     def load_mask(self, filename_mask: pathlib.Path) -> None:
         with rasterio.open(filename_mask) as msk:
@@ -109,7 +120,9 @@ class BaseDistance(ABC):
 
     @abstractmethod
     def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
-        pass
+        if self.reference_pixels.transform is not None:
+            image = self.reference_pixels.transform.transform(image)
+        return image
 
     @abstractmethod
     def show_statistics(self) -> None:
@@ -134,6 +147,7 @@ class MahalanobisDistance(BaseDistance):
         For all pixels in the image, calculate the Mahalanobis distance
         to the reference color.
         """
+        image = super().calculate_distance(image)
         assert self.bands_to_use is not None
         pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
         inv_cov = np.linalg.inv(self.covariance)
@@ -168,6 +182,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         For all pixels in the image, calculate the distance to the
         reference color modelled as a Gaussian Mixture Model.
         """
+        image = super().calculate_distance(image)
         assert self.bands_to_use is not None
         pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
         loglikelihood = -self.gmm.score_samples(pixels)

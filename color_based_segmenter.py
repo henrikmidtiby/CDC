@@ -4,6 +4,7 @@ from typing import Any
 
 from color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
 from tiled_color_based_segmenter import TiledColorBasedSegmenter
+from transforms import GammaCorrector
 
 
 def parse_args() -> Any:
@@ -75,20 +76,33 @@ def parse_args() -> Any:
         metavar="FROM_TILE_ID TO_TILE_ID",
         help="takes two inputs like (--from_specific_tileset 16 65). This will run every tile from 16 to 65.",
     )
+    parser.add_argument(
+        "--gamma_transform",
+        type=float,
+        default=1,
+        metavar="GAMMA",
+        help="Apply a gamma transform with the given gamma to all inputs. Default no transform.",
+    )
     args = parser.parse_args()
     return args
 
 
 def main() -> None:
     args = parse_args()
+    keyword_args = vars(args)
+    if args.gamma_transform != 1:
+        gamma_transform = GammaCorrector(args.gamma_transform)
+    else:
+        gamma_transform = None
+    keyword_args.update({"transform": gamma_transform})
     if args.method == "mahalanobis":
-        color_model: BaseDistance = MahalanobisDistance(**vars(args))
+        color_model: BaseDistance = MahalanobisDistance(**keyword_args)
     if args.method == "gmm":
-        color_model = GaussianMixtureModelDistance(n_components=args.param, **vars(args))
+        color_model = GaussianMixtureModelDistance(n_components=args.param, **keyword_args)
     pixels_filename = args.output_tile_location.joinpath(f"{args.mask_file_name}.csv")
     color_model.save_pixel_values(pixels_filename)
 
-    tcbs = TiledColorBasedSegmenter(color_model=color_model, **vars(args))
+    tcbs = TiledColorBasedSegmenter(color_model=color_model, **keyword_args)
     tcbs.process_tiles()
     tcbs.calculate_statistics()
     tcbs.save_statistics(args)
