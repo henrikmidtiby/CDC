@@ -186,7 +186,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         assert self.bands_to_use is not None
         pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
         loglikelihood = -self.gmm.score_samples(pixels)
-        distance = np.sqrt(loglikelihood - self.min_score)
+        distance = np.sqrt(np.maximum(loglikelihood - self.min_score, 0))
         distance_image = np.reshape(distance, (1, image.shape[1], image.shape[2]))
         return distance_image
 
