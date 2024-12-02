@@ -42,4 +42,9 @@ class LambdaTransform(BaseTransformer):
             self.lambda_exp = lambda_expression
 
     def transform(self, image: NDArray[Any]) -> NDArray[Any]:
+        res_image = self.lambda_exp(image)
+        if res_image.shape != image.shape:
+            raise Exception(
+                f"Lambda expression may not change the image shape! input shape: {image.shape}, output shape: {res_image.shape}"
+            )
         return self.lambda_exp(image)
