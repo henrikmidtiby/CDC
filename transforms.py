@@ -18,7 +18,7 @@ class BaseTransformer(ABC):
         pass
 
 
-class GammaCorrector(BaseTransformer):
+class GammaTransform(BaseTransformer):
     """Transform for gamma correction."""
 
     def __init__(self, gamma: float) -> None:

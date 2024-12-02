@@ -4,7 +4,7 @@ from typing import Any
 
 from color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
 from tiled_color_based_segmenter import TiledColorBasedSegmenter
-from transforms import BaseTransformer, GammaCorrector, LambdaTransform
+from transforms import BaseTransformer, GammaTransform, LambdaTransform
 
 
 def parse_args() -> Any:
@@ -97,12 +97,11 @@ def parse_args() -> Any:
 def main() -> None:
     args = parse_args()
     keyword_args = vars(args)
+    transform: BaseTransformer | None = None
     if args.gamma_transform is not None:
-        transform: BaseTransformer | None = GammaCorrector(args.gamma_transform)
-    elif args.lambda_transform is not None:
+        transform = GammaTransform(args.gamma_transform)
+    if args.lambda_transform is not None:
         transform = LambdaTransform(args.lambda_transform)
-    else:
-        transform = None
     keyword_args.update({"transform": transform})
     if args.method == "mahalanobis":
         color_model: BaseDistance = MahalanobisDistance(**keyword_args)
