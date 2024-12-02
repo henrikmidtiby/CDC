@@ -4,7 +4,7 @@ from typing import Any
 
 from color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
 from tiled_color_based_segmenter import TiledColorBasedSegmenter
-from transforms import GammaCorrector
+from transforms import BaseTransformer, GammaCorrector, LambdaTransform
 
 
 def parse_args() -> Any:
@@ -79,9 +79,16 @@ def parse_args() -> Any:
     parser.add_argument(
         "--gamma_transform",
         type=float,
-        default=1,
+        default=None,
         metavar="GAMMA",
         help="Apply a gamma transform with the given gamma to all inputs. Default no transform.",
+    )
+    parser.add_argument(
+        "--lambda_transform",
+        type=str,
+        default=None,
+        metavar="LAMBDA",
+        help="Apply a Lambda transform with the given Lambda expression to all inputs. Numpy is available as np. Default no transform.",
     )
     args = parser.parse_args()
     return args
@@ -90,11 +97,13 @@ def parse_args() -> Any:
 def main() -> None:
     args = parse_args()
     keyword_args = vars(args)
-    if args.gamma_transform != 1:
-        gamma_transform = GammaCorrector(args.gamma_transform)
+    if args.gamma_transform is not None:
+        transform: BaseTransformer | None = GammaCorrector(args.gamma_transform)
+    elif args.lambda_transform is not None:
+        transform = LambdaTransform(args.lambda_transform)
     else:
-        gamma_transform = None
-    keyword_args.update({"transform": gamma_transform})
+        transform = None
+    keyword_args.update({"transform": transform})
     if args.method == "mahalanobis":
         color_model: BaseDistance = MahalanobisDistance(**keyword_args)
     if args.method == "gmm":
