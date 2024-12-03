@@ -2,9 +2,9 @@ import argparse
 import pathlib
 from typing import Any
 
-from color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
-from tiled_color_based_segmenter import TiledColorBasedSegmenter
-from transforms import BaseTransformer, GammaTransform, LambdaTransform
+from OCDC.color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
+from OCDC.tiled_color_based_segmenter import TiledColorBasedSegmenter
+from OCDC.transforms import BaseTransformer, GammaTransform, LambdaTransform
 
 
 def parse_args() -> Any:

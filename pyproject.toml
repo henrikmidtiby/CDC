@@ -1,3 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "OCDC"
+version = "0.0.1"
+authors = [
+  { name="Henrik Skov Midtiby", email="hemi@mmmi.sdu.dk" },
+]
+maintainers = [
+  { name="Henrik Skov Midtiby", email="hemi@mmmi.sdu.dk" },
+  { name="Henrik Dyrberg Egemose", email="hde@mmmi.sdu.dk" },
+]
+description = "Calculate color distances on orthomosaics."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "matplotlib>=3.9.3",
+  "numpy>=2.1.3",
+  "rasterio>=1.4.3",
+  "scikit-learn>=1.5.2",
+  "tqdm>=4.67.1",
+]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pre-commit>=4.0.1",
+]
+
+[project.scripts]
+OCDC = "OCDC.__main__:main"
+
 [tool.codespell]
 check-hidden = true
 skip = ".git,venv,*.c"
@@ -37,6 +78,7 @@ ignore = [
   "D101",
   "D102",
   "D103",
+  "D104",
   "D107",
   # as recommended by https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
   "D206",

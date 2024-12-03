@@ -8,7 +8,7 @@ import rasterio  # type: ignore[import-untyped]
 from numpy.typing import NDArray
 from sklearn import mixture  # type: ignore[import-untyped]
 
-from transforms import BaseTransformer
+from OCDC.transforms import BaseTransformer
 
 
 class ReferencePixels:

@@ -38,8 +38,8 @@ import numpy as np
 from numpy.typing import NDArray
 from tqdm import tqdm
 
-from color_models import BaseDistance
-from orthomosaic_tiler import OrthomosaicTiles
+from OCDC.color_models import BaseDistance
+from OCDC.orthomosaic_tiler import OrthomosaicTiles
 
 
 class TiledColorBasedSegmenter:
