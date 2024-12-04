@@ -36,13 +36,18 @@ classifiers = [
 dev = [
   "pre-commit>=4.0.1",
   "pytest>=8.3.4",
+  "pytest-cov>=6.0.0",
 ]
 test = [
   "pytest>=8.3.4",
+  "pytest-cov>=6.0.0",
 ]
 
 [project.scripts]
 OCDC = "OCDC.__main__:main"
+
+[tool.pytest.ini_options]
+addopts = "--cov=OCDC --cov-report html:test_coverage"
 
 [tool.codespell]
 check-hidden = true
