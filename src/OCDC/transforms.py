@@ -22,9 +22,13 @@ class GammaTransform(BaseTransformer):
     """Transform for gamma correction."""
 
     def __init__(self, gamma: float) -> None:
+        if not gamma > 0:
+            raise ValueError("Gamma must be positive")
         self.gamma: float = gamma
 
     def transform(self, image: NDArray[Any]) -> NDArray[Any]:
+        if np.any(image < 0):
+            raise ValueError("Image can not have negative values in the Gamma Transform")
         gamma_corrected_image = image**self.gamma
         return gamma_corrected_image
 
@@ -37,14 +41,14 @@ class LambdaTransform(BaseTransformer):
             if lambda_expression.startswith("lambda"):
                 self.lambda_exp: Callable[[NDArray[Any]], NDArray[Any]] = eval(lambda_expression)
             else:
-                raise Exception("Lambda expression as string have to start with 'lambda'")
+                raise ValueError("Lambda expression as string have to start with 'lambda'")
         else:
             self.lambda_exp = lambda_expression
 
     def transform(self, image: NDArray[Any]) -> NDArray[Any]:
         res_image = self.lambda_exp(image)
         if res_image.shape != image.shape:
-            raise Exception(
+            raise ValueError(
                 f"Lambda expression may not change the image shape! input shape: {image.shape}, output shape: {res_image.shape}"
             )
         return self.lambda_exp(image)
