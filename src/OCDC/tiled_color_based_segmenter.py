@@ -47,13 +47,11 @@ class TiledColorBasedSegmenter:
         self,
         *,
         color_model: BaseDistance,
-        bands_to_use: Any,
         scale: float,
         output_tile_location: pathlib.Path,
         **kwargs: Any,
     ):
         self.ortho_tiler = OrthomosaicTiles(**kwargs)
-        self.bands_to_use = bands_to_use
         self.output_tile_location = output_tile_location
         self.colormodel = color_model
         self.output_scale_factor = scale
@@ -72,7 +70,7 @@ class TiledColorBasedSegmenter:
 
     def process_tiles(self, save_tiles: bool = True, save_ortho: bool = True) -> None:
         for tile in tqdm(self.ortho_tiler.tiles):
-            img = tile.read_tile(self.ortho_tiler.orthomosaic, self.bands_to_use)
+            img = tile.read_tile(self.ortho_tiler.orthomosaic)
             distance_img = self.process_image(img)
             if save_tiles:
                 tile.save_tile(distance_img, self.output_tile_location)

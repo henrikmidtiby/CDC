@@ -41,7 +41,7 @@ class Tile:
         self.tile_number: int = 0
         self.output: NDArray[Any] = np.zeros(0)
 
-    def read_tile(self, orthomosaic_filename: pathlib.Path, bands_to_use: tuple[int, ...] | None) -> NDArray[Any]:
+    def read_tile(self, orthomosaic_filename: pathlib.Path) -> NDArray[Any]:
         with rasterio.open(orthomosaic_filename) as src:
             window = Window.from_slices(
                 (self.ulc[0], self.lrc[0]),
@@ -49,10 +49,8 @@ class Tile:
             )
             img = src.read(window=window)
             mask = src.read_masks(window=window)
-            if bands_to_use is None:
-                bands_to_use = tuple(range(img.shape[0] - 1))
-            self.mask = mask[bands_to_use[0]]
-            for band in bands_to_use:
+            self.mask = mask[0]
+            for band in range(mask.shape[0]):
                 self.mask = self.mask & mask[band]
         return img
 
