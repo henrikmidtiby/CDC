@@ -18,12 +18,14 @@ class ReferencePixels:
         reference: pathlib.Path,
         annotated: pathlib.Path,
         bands_to_use: tuple[int, ...] | None,
+        alpha_channel: int | None = -1,
         transform: BaseTransformer | None,
         **kwargs: Any,
     ):
         self.reference_image_filename = reference
         self.mask_filename = annotated
         self.bands_to_use: tuple[int, ...] | None = bands_to_use
+        self.alpha_channel: int | None = alpha_channel
         self.transform: BaseTransformer | None = transform
         self.reference_image: NDArray[Any] = np.zeros(0)
         self.mask: NDArray[Any] = np.zeros(0)
@@ -33,10 +35,24 @@ class ReferencePixels:
     def initialize(self) -> None:
         self.load_reference_image(self.reference_image_filename)
         self.load_mask(self.mask_filename)
-        if self.bands_to_use is None:
-            self.bands_to_use = tuple(range(self.reference_image.shape[0] - 1))
+        self.get_bands_to_use()
         self.generate_pixel_mask()
         self.show_statistics_of_pixel_mask()
+
+    def get_bands_to_use(self):
+        if self.bands_to_use is None:
+            self.bands_to_use = tuple(range(self.reference_image.shape[0]))
+            if self.alpha_channel is not None:
+                if self.alpha_channel < -1 or self.alpha_channel > self.reference_image.shape[0] - 1:
+                    raise ValueError(
+                        f"Alpha channel have to be between -1 and {self.reference_image.shape[0]-1}, but got {self.alpha_channel}."
+                    )
+                elif self.alpha_channel == -1:
+                    self.alpha_channel = self.reference_image.shape[0] - 1
+                self.bands_to_use = tuple(x for x in self.bands_to_use if x != self.alpha_channel)
+        for band in self.bands_to_use:
+            if band < 0 or band > self.reference_image.shape[0] - 1:
+                raise ValueError(f"Bands have to be between 0 and {self.reference_image.shape[0]-1}, but got {band}.")
 
     def load_reference_image(self, filename_reference_image: pathlib.Path) -> None:
         with rasterio.open(filename_reference_image) as ref_img:
@@ -53,19 +69,19 @@ class ReferencePixels:
     ) -> None:
         if self.mask.shape[0] == 3 or self.mask.shape[0] == 4:
             pixel_mask = np.where(
-                (self.mask[0, :, :] > lower_range[0])
-                & (self.mask[0, :, :] < higher_range[0])
-                & (self.mask[1, :, :] > lower_range[1])
-                & (self.mask[1, :, :] < higher_range[1])
-                & (self.mask[2, :, :] > lower_range[2])
-                & (self.mask[2, :, :] < higher_range[2]),
+                (self.mask[0, :, :] >= lower_range[0])
+                & (self.mask[0, :, :] <= higher_range[0])
+                & (self.mask[1, :, :] >= lower_range[1])
+                & (self.mask[1, :, :] <= higher_range[1])
+                & (self.mask[2, :, :] >= lower_range[2])
+                & (self.mask[2, :, :] <= higher_range[2]),
                 255,
                 0,
             )
         elif self.mask.shape[0] == 1:
             pixel_mask = np.where((self.mask[0, :, :] > 127), 255, 0)
         else:
-            raise Exception(f"Expected a Black and White or RGB image for mask but got {self.mask.shape[0]} Bands")
+            raise TypeError(f"Expected a Black and White or RGB(A) image for mask but got {self.mask.shape[0]} Bands")
         self.values = self.reference_image[:, pixel_mask == 255]
         self.values = self.values[self.bands_to_use, :]
 
