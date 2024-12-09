@@ -28,6 +28,12 @@ def parse_args() -> Any:
         help="The bands needed to be analysed, written as a list, 0 indexed. If no value is specified all bands except alpha channel will be analysed.",
     )
     parser.add_argument(
+        "--alpha_channel",
+        default=-1,
+        type=int,
+        help="Alpha channel number 0 indexed. If no value is specified the last channel is assumed to be the alpha channel. If the orthomosaic does not contain an alpha channel use None.",
+    )
+    parser.add_argument(
         "--scale",
         default=5,
         type=float,
