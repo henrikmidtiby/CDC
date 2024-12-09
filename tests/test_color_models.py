@@ -148,7 +148,7 @@ class TestColorModels(unittest.TestCase):
         self.monkeypatch = pytest.MonkeyPatch()
 
     def test_calculate_distance(self):
-        def mock_reference_pixels_init(self, bands_to_use):
+        def mock_reference_pixels_init(self, bands_to_use, *args, **kwargs):
             self.bands_to_use = bands_to_use
             self.values = test_reference_pixels_values
             self.transform = None

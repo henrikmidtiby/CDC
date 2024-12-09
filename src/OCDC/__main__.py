@@ -7,7 +7,7 @@ from OCDC.tiled_color_based_segmenter import TiledColorBasedSegmenter
 from OCDC.transforms import BaseTransformer, GammaTransform, LambdaTransform
 
 
-def parse_args() -> Any:
+def parse_args(args=None) -> Any:
     parser = argparse.ArgumentParser(
         prog="ColorDistranceCalculatorForOrthomosaics",
         description="A tool for calculating color distances in an "
@@ -54,6 +54,7 @@ def parse_args() -> Any:
     parser.add_argument(
         "--method",
         default="mahalanobis",
+        type=str,
         help="The method used for calculating distances from the set of annotated pixels. Possible values are 'mahalanobis' for using the Mahalanobis distance and 'gmm' for using a Gaussian Mixture Model. 'mahalanobis' is the default value.",
     )
     parser.add_argument(
@@ -96,26 +97,35 @@ def parse_args() -> Any:
         metavar="LAMBDA",
         help="Apply a Lambda transform with the given Lambda expression to all inputs. Numpy is available as np. Default no transform.",
     )
-    args = parser.parse_args()
-    return args
+    return parser.parse_args(args)
 
 
-def main() -> None:
-    args = parse_args()
-    keyword_args = vars(args)
+def process_transform_args(args):
     transform: BaseTransformer | None = None
     if args.gamma_transform is not None:
         transform = GammaTransform(args.gamma_transform)
     if args.lambda_transform is not None:
         transform = LambdaTransform(args.lambda_transform)
-    keyword_args.update({"transform": transform})
+    return {"transform": transform}
+
+
+def process_color_model_args(args, keyword_args):
     if args.method == "mahalanobis":
         color_model: BaseDistance = MahalanobisDistance(**keyword_args)
-    if args.method == "gmm":
+    elif args.method == "gmm":
         color_model = GaussianMixtureModelDistance(n_components=args.param, **keyword_args)
+    else:
+        raise ValueError(f"Method must be one of 'mahalanobis' or 'gmm', but got {args.method}")
     pixels_filename = args.output_tile_location.joinpath(f"{args.mask_file_name}.csv")
     color_model.save_pixel_values(pixels_filename)
+    return color_model
 
+
+def main() -> None:
+    args = parse_args()
+    keyword_args = vars(args)
+    keyword_args.update(process_transform_args(args))
+    color_model = process_color_model_args()
     tcbs = TiledColorBasedSegmenter(color_model=color_model, **keyword_args)
     tcbs.process_tiles()
     tcbs.calculate_statistics()
