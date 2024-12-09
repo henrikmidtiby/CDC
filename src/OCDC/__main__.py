@@ -109,15 +109,16 @@ def process_transform_args(args):
     return {"transform": transform}
 
 
-def process_color_model_args(args, keyword_args):
+def process_color_model_args(args, keyword_args, save_pixels_values=True):
     if args.method == "mahalanobis":
         color_model: BaseDistance = MahalanobisDistance(**keyword_args)
     elif args.method == "gmm":
         color_model = GaussianMixtureModelDistance(n_components=args.param, **keyword_args)
     else:
         raise ValueError(f"Method must be one of 'mahalanobis' or 'gmm', but got {args.method}")
-    pixels_filename = args.output_tile_location.joinpath(f"{args.mask_file_name}.csv")
-    color_model.save_pixel_values(pixels_filename)
+    if save_pixels_values:
+        pixels_filename = args.output_tile_location.joinpath(f"{args.mask_file_name}.csv")
+        color_model.save_pixel_values(pixels_filename)
     return color_model
 
 
