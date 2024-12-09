@@ -1,3 +1,5 @@
+import unittest
+
 import numpy as np
 import pytest
 from numpy.random import default_rng
@@ -9,7 +11,7 @@ test_float_image_neg1_1 = test_float_image_0_1 * 2 - 1
 test_uint8_image = (test_float_image_0_1 * 255).astype(np.uint8)
 
 
-class TestTransformers:
+class TestTransformers(unittest.TestCase):
     def test_gamma(self):
         # test Exceptions
         with pytest.raises(ValueError, match="Gamma must be positive"):
