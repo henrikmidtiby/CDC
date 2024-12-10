@@ -87,6 +87,8 @@ class TestArgsParser(unittest.TestCase):
         assert parser.gamma_transform == 0.5
         assert parser.lambda_transform == "lambda x: x+5"
 
+
+class TestArgParserTransforms(unittest.TestCase):
     def test_transform_args(self):
         args = parse_args(
             ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--gamma_transform", "0.5"]
