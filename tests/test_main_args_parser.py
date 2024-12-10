@@ -1,11 +1,14 @@
 import pathlib
 import unittest
 
+import numpy as np
 import pytest
 
 from OCDC.__main__ import parse_args, process_color_model_args, process_transform_args
-from OCDC.color_models import GaussianMixtureModelDistance, MahalanobisDistance
+from OCDC.color_models import GaussianMixtureModelDistance, MahalanobisDistance, ReferencePixels
 from OCDC.transforms import GammaTransform, LambdaTransform
+
+test_reference_pixels_values = np.array([[5, 20, 99], [5, 20, 100], [5, 19, 101]])
 
 
 class TestArgsParser(unittest.TestCase):
@@ -106,17 +109,31 @@ class TestArgsParser(unittest.TestCase):
         transform_args = process_transform_args(args)
         assert transform_args["transform"] is None
 
+
+class TestArgParserColorModels(unittest.TestCase):
+    def setUp(self):
+        self.monkeypatch = pytest.MonkeyPatch()
+
     def test_color_model_args(self):
+        def mock_reference_pixels_init(self, bands_to_use, *args, **kwargs):
+            self.bands_to_use = bands_to_use
+            self.values = test_reference_pixels_values
+            self.transform = None
+
         args = parse_args(
             ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "mahalanobis"]
         )
-        color_model = process_color_model_args(args, vars(args), save_pixels_values=False)
-        assert isinstance(color_model, MahalanobisDistance)
-        args = parse_args(["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "gmm"])
-        color_model = process_color_model_args(args, vars(args), save_pixels_values=False)
-        assert isinstance(color_model, GaussianMixtureModelDistance)
-        args = parse_args(
-            ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "test_wrong"]
-        )
-        with pytest.raises(ValueError, match=r"Method must be one of 'mahalanobis' or 'gmm', but got (.*)"):
-            color_model = process_color_model_args(args, vars(args))
+        with self.monkeypatch.context() as mp:
+            mp.setattr(ReferencePixels, "__init__", mock_reference_pixels_init)
+            color_model = process_color_model_args(args, vars(args), save_pixels_values=False)
+            assert isinstance(color_model, MahalanobisDistance)
+            args = parse_args(
+                ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "gmm"]
+            )
+            color_model = process_color_model_args(args, vars(args), save_pixels_values=False)
+            assert isinstance(color_model, GaussianMixtureModelDistance)
+            args = parse_args(
+                ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "test_wrong"]
+            )
+            with pytest.raises(ValueError, match=r"Method must be one of 'mahalanobis' or 'gmm', but got (.*)"):
+                color_model = process_color_model_args(args, vars(args))

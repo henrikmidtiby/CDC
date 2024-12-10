@@ -68,79 +68,83 @@ class TestReferencePixels(unittest.TestCase):
 
             return mock_load_mask
 
-        self.monkeypatch.setattr(ReferencePixels, "load_reference_image", mock_load_reference_image)
-        # test mask with red annotations
-        self.monkeypatch.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_red_mask))
-        ReferencePixels(
-            reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=(0, 1, 2), transform=None
-        )
-        # test bands_to_use is set correct and matches image
-        rp_none_alpha_none = ReferencePixels(
-            reference=pathlib.Path("test"),
-            annotated=pathlib.Path("test"),
-            bands_to_use=None,
-            alpha_channel=None,
-            transform=None,
-        )
-        assert rp_none_alpha_none.bands_to_use == (0, 1, 2)
-        rp_01 = ReferencePixels(
-            reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=(0, 1), transform=None
-        )
-        assert rp_01.bands_to_use == (0, 1)
-        rp_01_alpha_neg1 = ReferencePixels(
-            reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=None, transform=None
-        )
-        assert rp_01_alpha_neg1.bands_to_use == (0, 1)
-        rp_02_alpha_1 = ReferencePixels(
-            reference=pathlib.Path("test"),
-            annotated=pathlib.Path("test"),
-            bands_to_use=None,
-            alpha_channel=1,
-            transform=None,
-        )
-        assert rp_02_alpha_1.bands_to_use == (0, 2)
-        # test alpha channel an bands_to_use raises exceptions if out of bounds
-        with pytest.raises(ValueError, match=r"Bands have to be between 0 and \d+, but got -?\d+\."):
+        with self.monkeypatch.context() as mp:
+            mp.setattr(ReferencePixels, "load_reference_image", mock_load_reference_image)
+            # test mask with red annotations
+            mp.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_red_mask))
             ReferencePixels(
-                reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=[-1], transform=None
+                reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=(0, 1, 2), transform=None
             )
-        with pytest.raises(ValueError, match=r"Bands have to be between 0 and \d+, but got -?\d+\."):
-            ReferencePixels(
-                reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=[0, 2, 8], transform=None
-            )
-        with pytest.raises(ValueError, match=r"Alpha channel have to be between -1 and \d+, but got -?\d+\."):
-            ReferencePixels(
+            # test bands_to_use is set correct and matches image
+            rp_none_alpha_none = ReferencePixels(
                 reference=pathlib.Path("test"),
                 annotated=pathlib.Path("test"),
                 bands_to_use=None,
-                alpha_channel=-2,
+                alpha_channel=None,
                 transform=None,
             )
-        with pytest.raises(ValueError, match=r"Alpha channel have to be between -1 and \d+, but got -?\d+\."):
-            ReferencePixels(
+            assert rp_none_alpha_none.bands_to_use == (0, 1, 2)
+            rp_01 = ReferencePixels(
+                reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=(0, 1), transform=None
+            )
+            assert rp_01.bands_to_use == (0, 1)
+            rp_01_alpha_neg1 = ReferencePixels(
+                reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=None, transform=None
+            )
+            assert rp_01_alpha_neg1.bands_to_use == (0, 1)
+            rp_02_alpha_1 = ReferencePixels(
                 reference=pathlib.Path("test"),
                 annotated=pathlib.Path("test"),
                 bands_to_use=None,
-                alpha_channel=8,
+                alpha_channel=1,
                 transform=None,
             )
-        # test black and white mask
-        self.monkeypatch.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_bw_mask))
-        ReferencePixels(
-            reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=None, transform=None
-        )
-        # test mask of the wrong type
-        self.monkeypatch.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_wrong_size_mask))
-        with pytest.raises(TypeError):
+            assert rp_02_alpha_1.bands_to_use == (0, 2)
+            # test alpha channel an bands_to_use raises exceptions if out of bounds
+            with pytest.raises(ValueError, match=r"Bands have to be between 0 and \d+, but got -?\d+\."):
+                ReferencePixels(
+                    reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=[-1], transform=None
+                )
+            with pytest.raises(ValueError, match=r"Bands have to be between 0 and \d+, but got -?\d+\."):
+                ReferencePixels(
+                    reference=pathlib.Path("test"),
+                    annotated=pathlib.Path("test"),
+                    bands_to_use=[0, 2, 8],
+                    transform=None,
+                )
+            with pytest.raises(ValueError, match=r"Alpha channel have to be between -1 and \d+, but got -?\d+\."):
+                ReferencePixels(
+                    reference=pathlib.Path("test"),
+                    annotated=pathlib.Path("test"),
+                    bands_to_use=None,
+                    alpha_channel=-2,
+                    transform=None,
+                )
+            with pytest.raises(ValueError, match=r"Alpha channel have to be between -1 and \d+, but got -?\d+\."):
+                ReferencePixels(
+                    reference=pathlib.Path("test"),
+                    annotated=pathlib.Path("test"),
+                    bands_to_use=None,
+                    alpha_channel=8,
+                    transform=None,
+                )
+            # test black and white mask
+            mp.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_bw_mask))
             ReferencePixels(
                 reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=None, transform=None
             )
-        # test mask which selects to few pixels
-        self.monkeypatch.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_too_small_mask))
-        with pytest.raises(Exception, match=r"Not enough annotated pixels. Need at least \d+, but got \d+"):
-            ReferencePixels(
-                reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=None, transform=None
-            )
+            # test mask of the wrong type
+            mp.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_wrong_size_mask))
+            with pytest.raises(TypeError):
+                ReferencePixels(
+                    reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=None, transform=None
+                )
+            # test mask which selects to few pixels
+            mp.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_too_small_mask))
+            with pytest.raises(Exception, match=r"Not enough annotated pixels. Need at least \d+, but got \d+"):
+                ReferencePixels(
+                    reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=None, transform=None
+                )
 
 
 class TestColorModels(unittest.TestCase):
@@ -153,13 +157,14 @@ class TestColorModels(unittest.TestCase):
             self.values = test_reference_pixels_values
             self.transform = None
 
-        self.monkeypatch.setattr(ReferencePixels, "__init__", mock_reference_pixels_init)
-        # test Mahalanobis distance calculations
-        md = MahalanobisDistance(bands_to_use=[0, 1, 2])
-        np.testing.assert_almost_equal(md.calculate_distance(test_image), test_mahal_res, decimal=6)
-        # test Gaussian Mixture Model distance calculations with 1 cluster
-        gmmd1 = GaussianMixtureModelDistance(bands_to_use=[0, 1, 2], n_components=1)
-        np.testing.assert_almost_equal(gmmd1.calculate_distance(test_image), test_gmm_1_res, decimal=6)
-        # test Gaussian Mixture Model distance calculations with 2 cluster
-        gmmd2 = GaussianMixtureModelDistance(bands_to_use=[0, 1, 2], n_components=2)
-        np.testing.assert_almost_equal(gmmd2.calculate_distance(test_image), test_gmm_2_res, decimal=6)
+        with self.monkeypatch.context() as mp:
+            mp.setattr(ReferencePixels, "__init__", mock_reference_pixels_init)
+            # test Mahalanobis distance calculations
+            md = MahalanobisDistance(bands_to_use=[0, 1, 2])
+            np.testing.assert_almost_equal(md.calculate_distance(test_image), test_mahal_res, decimal=6)
+            # test Gaussian Mixture Model distance calculations with 1 cluster
+            gmmd1 = GaussianMixtureModelDistance(bands_to_use=[0, 1, 2], n_components=1)
+            np.testing.assert_almost_equal(gmmd1.calculate_distance(test_image), test_gmm_1_res, decimal=6)
+            # test Gaussian Mixture Model distance calculations with 2 cluster
+            gmmd2 = GaussianMixtureModelDistance(bands_to_use=[0, 1, 2], n_components=2)
+            np.testing.assert_almost_equal(gmmd2.calculate_distance(test_image), test_gmm_2_res, decimal=6)
