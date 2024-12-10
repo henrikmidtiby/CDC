@@ -126,7 +126,7 @@ def main() -> None:
     args = parse_args()
     keyword_args = vars(args)
     keyword_args.update(process_transform_args(args))
-    color_model = process_color_model_args()
+    color_model = process_color_model_args(args, keyword_args)
     tcbs = TiledColorBasedSegmenter(color_model=color_model, **keyword_args)
     tcbs.process_tiles()
     tcbs.calculate_statistics()
