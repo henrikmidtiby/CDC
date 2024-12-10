@@ -108,7 +108,9 @@ class OrthomosaicTiles:
             for tile_number in self.run_specific_tile:
                 specified_tiles.append(tile_list[tile_number])
         if self.run_specific_tileset is not None:
-            for start, end in zip(self.run_specific_tileset[::2], self.run_specific_tileset[1::2], strict=False):
+            for start, end in zip(self.run_specific_tileset[::2], self.run_specific_tileset[1::2], strict=True):
+                if start > end:
+                    raise ValueError(f"Specific tileset range is negative: from {start} to {end}")
                 for tile_number in range(start, end + 1):
                     specified_tiles.append(tile_list[tile_number])
         return specified_tiles
@@ -141,11 +143,7 @@ class OrthomosaicTiles:
                 tile.processing_range[0][1] = self.tile_size
         return processing_tiles
 
-    def define_tiles(self) -> tuple[list[Tile], int, int]:
-        """
-        Given a path to an orthomosaic, create a list of tiles which covers the
-        orthomosaic with a specified overlap, height and width.
-        """
+    def get_orthomosaic_data(self):
         with rasterio.open(self.orthomosaic) as src:
             columns = src.width
             rows = src.height
@@ -153,6 +151,14 @@ class OrthomosaicTiles:
             crs = src.crs
             left = src.bounds[0]
             top = src.bounds[3]
+        return columns, rows, resolution, crs, left, top
+
+    def define_tiles(self) -> tuple[list[Tile], int, int]:
+        """
+        Given a path to an orthomosaic, create a list of tiles which covers the
+        orthomosaic with a specified overlap, height and width.
+        """
+        columns, rows, resolution, crs, left, top = self.get_orthomosaic_data()
         last_position = (rows - self.tile_size, columns - self.tile_size)
         n_height = np.ceil(rows / (self.tile_size * (1 - self.overlap))).astype(int)
         n_width = np.ceil(columns / (self.tile_size * (1 - self.overlap))).astype(int)

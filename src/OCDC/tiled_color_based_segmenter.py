@@ -58,7 +58,8 @@ class TiledColorBasedSegmenter:
         self.image_statistics = np.zeros(256)
         self.ortho_tiler.divide_orthomosaic_into_tiles()
 
-    def convertScaleAbs(self, img: NDArray[Any], alpha: float) -> NDArray[Any]:
+    @staticmethod
+    def convertScaleAbs(img: NDArray[Any], alpha: float) -> NDArray[Any]:
         scaled_img = np.minimum(np.abs(alpha * img), 255)
         return scaled_img
 
