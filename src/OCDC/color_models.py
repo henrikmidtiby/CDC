@@ -4,9 +4,9 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import numpy as np
-import rasterio  # type: ignore[import-untyped]
+import rasterio
 from numpy.typing import NDArray
-from sklearn import mixture  # type: ignore[import-untyped]
+from sklearn import mixture
 
 from OCDC.transforms import BaseTransformer
 
@@ -39,7 +39,7 @@ class ReferencePixels:
         self.generate_pixel_mask()
         self.show_statistics_of_pixel_mask()
 
-    def get_bands_to_use(self):
+    def get_bands_to_use(self) -> None:
         if self.bands_to_use is None:
             self.bands_to_use = tuple(range(self.reference_image.shape[0]))
             if self.alpha_channel is not None:

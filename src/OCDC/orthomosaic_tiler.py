@@ -3,10 +3,10 @@ import pathlib
 from typing import Any
 
 import numpy as np
-import rasterio  # type: ignore[import-untyped]
+import rasterio
 from numpy.typing import NDArray
-from rasterio.transform import Affine  # type: ignore[import-untyped]
-from rasterio.windows import Window  # type: ignore[import-untyped]
+from rasterio.transform import Affine
+from rasterio.windows import Window
 
 
 class Tile:
@@ -143,7 +143,7 @@ class OrthomosaicTiles:
                 tile.processing_range[0][1] = self.tile_size
         return processing_tiles
 
-    def get_orthomosaic_data(self):
+    def get_orthomosaic_data(self) -> tuple[int, int, tuple[float, float], rasterio.CRS, float, float]:
         with rasterio.open(self.orthomosaic) as src:
             columns = src.width
             rows = src.height

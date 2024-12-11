@@ -7,7 +7,7 @@ from OCDC.tiled_color_based_segmenter import TiledColorBasedSegmenter
 from OCDC.transforms import BaseTransformer, GammaTransform, LambdaTransform
 
 
-def parse_args(args=None) -> Any:
+def parse_args(args: Any = None) -> Any:
     parser = argparse.ArgumentParser(
         prog="ColorDistranceCalculatorForOrthomosaics",
         description="A tool for calculating color distances in an "
@@ -100,7 +100,7 @@ def parse_args(args=None) -> Any:
     return parser.parse_args(args)
 
 
-def process_transform_args(args):
+def process_transform_args(args: Any) -> dict[str, BaseTransformer | None]:
     transform: BaseTransformer | None = None
     if args.gamma_transform is not None:
         transform = GammaTransform(args.gamma_transform)
@@ -109,7 +109,7 @@ def process_transform_args(args):
     return {"transform": transform}
 
 
-def process_color_model_args(args, keyword_args, save_pixels_values=True):
+def process_color_model_args(args: Any, keyword_args: dict[str, Any], save_pixels_values: bool = True) -> BaseDistance:
     if args.method == "mahalanobis":
         color_model: BaseDistance = MahalanobisDistance(**keyword_args)
     elif args.method == "gmm":
