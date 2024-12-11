@@ -1,14 +1,15 @@
 import pathlib
 import unittest
+from typing import Any
 
 import pytest
-from rasterio.transform import Affine  # type: ignore[import-untyped]
+from rasterio.transform import Affine
 
 from OCDC.orthomosaic_tiler import OrthomosaicTiles, Tile
 
 
 class TestTiles(unittest.TestCase):
-    def test_tile(self):
+    def test_tile(self) -> None:
         tile_args = {
             "start_point": (1, 2),
             "position": [0, 0],
@@ -29,11 +30,13 @@ class TestTiles(unittest.TestCase):
 
 
 class TestOrthomosaicTiler(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.monkeypatch = pytest.MonkeyPatch()
 
-    def test_orthomosaic_tiler(self):
-        def mock_get_orthomosaic_data(*args, **kwargs):
+    def test_orthomosaic_tiler(self) -> None:
+        def mock_get_orthomosaic_data(
+            *args: Any, **kwargs: dict[str, Any]
+        ) -> tuple[int, int, tuple[float, float], str, float, float]:
             columns = 8000
             rows = 4000
             resolution = (0.05, 0.05)

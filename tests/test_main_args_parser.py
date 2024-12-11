@@ -1,5 +1,6 @@
 import pathlib
 import unittest
+from typing import Any
 
 import numpy as np
 import pytest
@@ -12,7 +13,7 @@ test_reference_pixels_values = np.array([[5, 20, 99], [5, 20, 100], [5, 19, 101]
 
 
 class TestArgsParser(unittest.TestCase):
-    def test_required_and_default_args(self):
+    def test_required_and_default_args(self) -> None:
         parser = parse_args(["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png"])
         # test required args
         assert parser.orthomosaic == pathlib.Path("/test/home/ortho.tiff")
@@ -37,7 +38,7 @@ class TestArgsParser(unittest.TestCase):
         with pytest.raises(SystemExit):
             parse_args([])
 
-    def test_optional_args_with_different_values(self):
+    def test_optional_args_with_different_values(self) -> None:
         # test all other arguments
         parser = parse_args(
             [
@@ -89,7 +90,7 @@ class TestArgsParser(unittest.TestCase):
 
 
 class TestArgParserTransforms(unittest.TestCase):
-    def test_transform_args(self):
+    def test_transform_args(self) -> None:
         args = parse_args(
             ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--gamma_transform", "0.5"]
         )
@@ -113,11 +114,13 @@ class TestArgParserTransforms(unittest.TestCase):
 
 
 class TestArgParserColorModels(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.monkeypatch = pytest.MonkeyPatch()
 
-    def test_color_model_args(self):
-        def mock_reference_pixels_init(self, bands_to_use, *args, **kwargs):
+    def test_color_model_args(self) -> None:
+        def mock_reference_pixels_init(
+            self: Any, bands_to_use: list[int], *args: Any, **kwargs: dict[str, Any]
+        ) -> None:
             self.bands_to_use = bands_to_use
             self.values = test_reference_pixels_values
             self.transform = None

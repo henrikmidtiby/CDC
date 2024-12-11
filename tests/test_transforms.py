@@ -1,8 +1,10 @@
 import unittest
+from typing import Any
 
 import numpy as np
 import pytest
 from numpy.random import default_rng
+from numpy.typing import NDArray
 
 from OCDC.transforms import GammaTransform, LambdaTransform
 
@@ -12,7 +14,7 @@ test_uint8_image = (test_float_image_0_1 * 255).astype(np.uint8)
 
 
 class TestTransformers(unittest.TestCase):
-    def test_gamma(self):
+    def test_gamma(self) -> None:
         # test Exceptions
         with pytest.raises(ValueError, match="Gamma must be positive"):
             GammaTransform(-1)
@@ -25,11 +27,11 @@ class TestTransformers(unittest.TestCase):
         np.testing.assert_equal(GammaTransform(4).transform(test_uint8_image), test_uint8_image**4)
         np.testing.assert_equal(GammaTransform(0.6).transform(test_uint8_image), test_uint8_image**0.6)
 
-    def test_lambda(self):
-        def lambda_test_func(image):
+    def test_lambda(self) -> None:
+        def lambda_test_func(image: NDArray[Any]) -> NDArray[Any]:
             return image / np.min(image)
 
-        def lambda_test_wrong_params_func(image, power):
+        def lambda_test_wrong_params_func(image: NDArray[Any], power: float) -> NDArray[Any]:
             return image**power
 
         # test Exceptions

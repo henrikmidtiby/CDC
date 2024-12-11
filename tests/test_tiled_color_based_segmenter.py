@@ -1,9 +1,11 @@
 import pathlib
 import unittest
+from typing import Any
 
 import numpy as np
 import pytest
 from numpy.random import default_rng
+from numpy.typing import NDArray
 
 from OCDC.orthomosaic_tiler import OrthomosaicTiles, Tile
 from OCDC.tiled_color_based_segmenter import TiledColorBasedSegmenter
@@ -18,10 +20,10 @@ test_uint8_image_csa = np.minimum(np.abs(5 * test_uint8_image), 255)
 
 
 class TestTiledColorSegmenter(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.monkeypatch = pytest.MonkeyPatch()
 
-    def test_tiled_color_segmenter(self):
+    def test_tiled_color_segmenter(self) -> None:
         # test convertScaleAbs
         np.testing.assert_equal(
             TiledColorBasedSegmenter.convertScaleAbs(test_float_image_0_1, 5), test_float_image_0_1_csa
@@ -32,10 +34,12 @@ class TestTiledColorSegmenter(unittest.TestCase):
         np.testing.assert_equal(TiledColorBasedSegmenter.convertScaleAbs(test_uint8_image, 5), test_uint8_image_csa)
 
         class ColorModel:
-            def calculate_distance(self, image):
+            def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
                 return image
 
-        def mock_get_orthomosaic_data(*args, **kwargs):
+        def mock_get_orthomosaic_data(
+            *args: Any, **kwargs: dict[str, Any]
+        ) -> tuple[int, int, tuple[float, float], str, float, float]:
             columns = 8000
             rows = 4000
             resolution = (0.05, 0.05)
@@ -44,7 +48,7 @@ class TestTiledColorSegmenter(unittest.TestCase):
             top = 6000000.0
             return columns, rows, resolution, crs, left, top
 
-        def mock_read_tile(self, *args, **kwargs):
+        def mock_read_tile(self: Any, *args: Any, **kwargs: dict[str, Any]) -> NDArray[Any]:
             self.mask = np.ones((1, *test_uint8_image.shape[1:]))
             return test_uint8_image
 

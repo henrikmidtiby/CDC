@@ -1,8 +1,11 @@
 import pathlib
 import unittest
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from OCDC.color_models import GaussianMixtureModelDistance, MahalanobisDistance, ReferencePixels
 
@@ -55,15 +58,15 @@ test_gmm_2_res = np.array(
 
 
 class TestReferencePixels(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.monkeypatch = pytest.MonkeyPatch()
 
-    def test_reference_pixels(self):
-        def mock_load_reference_image(self, *args, **kwargs):
+    def test_reference_pixels(self) -> None:
+        def mock_load_reference_image(self: Any, *args: Any, **kwargs: dict[str, Any]) -> None:
             self.reference_image = test_reference_pixel_image
 
-        def get_mock_load_mask(mask_to_use_as_mock):
-            def mock_load_mask(self, *args, **kwargs):
+        def get_mock_load_mask(mask_to_use_as_mock: NDArray[Any]) -> Callable[[Any, Any, dict[str, Any]], None]:
+            def mock_load_mask(self: Any, *args: Any, **kwargs: dict[str, Any]) -> None:
                 self.mask = mask_to_use_as_mock
 
             return mock_load_mask
@@ -148,11 +151,13 @@ class TestReferencePixels(unittest.TestCase):
 
 
 class TestColorModels(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.monkeypatch = pytest.MonkeyPatch()
 
-    def test_calculate_distance(self):
-        def mock_reference_pixels_init(self, bands_to_use, *args, **kwargs):
+    def test_calculate_distance(self) -> None:
+        def mock_reference_pixels_init(
+            self: Any, bands_to_use: list[int], *args: Any, **kwargs: dict[str, Any]
+        ) -> None:
             self.bands_to_use = bands_to_use
             self.values = test_reference_pixels_values
             self.transform = None
