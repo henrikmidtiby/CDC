@@ -60,7 +60,7 @@ class TiledColorBasedSegmenter:
 
     @staticmethod
     def convertScaleAbs(img: NDArray[Any], alpha: float) -> NDArray[Any]:
-        scaled_img = np.minimum(np.abs(alpha * img), 255)
+        scaled_img: NDArray[Any] = np.minimum(np.abs(alpha * img), 255)
         return scaled_img
 
     def process_image(self, image: NDArray[Any]) -> NDArray[Any]:

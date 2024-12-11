@@ -20,7 +20,7 @@ class TestTiles(unittest.TestCase):
             "left": 100.2,
             "top": 100.3,
         }
-        t_tile = Tile(**tile_args)
+        t_tile = Tile(**tile_args)  # type: ignore[arg-type]
         assert t_tile.ulc == (1, 2)
         assert t_tile.lrc == (1 + 300, 2 + 400)
         transform = Affine.translation(100.2 + (2 * 0.6) + 0.5 / 2, 100.3 - (1 * 0.5) - 0.5 / 2) * Affine.scale(
@@ -53,7 +53,7 @@ class TestOrthomosaicTiler(unittest.TestCase):
         }
         with self.monkeypatch.context() as mp:
             mp.setattr(OrthomosaicTiles, "get_orthomosaic_data", mock_get_orthomosaic_data)
-            ortho_tiler = OrthomosaicTiles(**orthomosaic_tiler_args)
+            ortho_tiler = OrthomosaicTiles(**orthomosaic_tiler_args)  # type: ignore[arg-type]
             tiles, _, _ = ortho_tiler.define_tiles()
             assert len(tiles) == int(8000 / 400 + 1) * int(4000 / 400 + 1)
             p_tiles = ortho_tiler.get_processing_tiles()

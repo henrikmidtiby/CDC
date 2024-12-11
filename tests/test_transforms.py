@@ -29,7 +29,8 @@ class TestTransformers(unittest.TestCase):
 
     def test_lambda(self) -> None:
         def lambda_test_func(image: NDArray[Any]) -> NDArray[Any]:
-            return image / np.min(image)
+            new_image: NDArray[Any] = image / np.min(image)
+            return new_image
 
         def lambda_test_wrong_params_func(image: NDArray[Any], power: float) -> NDArray[Any]:
             return image**power
@@ -44,7 +45,7 @@ class TestTransformers(unittest.TestCase):
         with pytest.raises(TypeError):
             LambdaTransform("lambda x, y: x*y").transform(test_float_image_0_1)
         with pytest.raises(TypeError):
-            LambdaTransform(lambda_test_wrong_params_func).transform(test_float_image_0_1)
+            LambdaTransform(lambda_test_wrong_params_func).transform(test_float_image_0_1)  # type: ignore[arg-type]
         # test 0 to 1 float images
         np.testing.assert_equal(
             LambdaTransform("lambda x: 3*x").transform(test_float_image_0_1), test_float_image_0_1 * 3

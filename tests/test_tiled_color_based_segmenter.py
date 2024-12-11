@@ -64,7 +64,7 @@ class TestTiledColorSegmenter(unittest.TestCase):
         with self.monkeypatch.context() as mp:
             mp.setattr(OrthomosaicTiles, "get_orthomosaic_data", mock_get_orthomosaic_data)
             mp.setattr(Tile, "read_tile", mock_read_tile)
-            tcbs = TiledColorBasedSegmenter(**tiler_args)
+            tcbs = TiledColorBasedSegmenter(**tiler_args)  # type: ignore[arg-type]
             np.testing.assert_equal(tcbs.process_image(test_float_image_0_1), test_float_image_0_1_csa.astype(np.uint8))
             np.testing.assert_equal(
                 tcbs.process_image(test_float_image_neg1_1), test_float_image_neg1_1_csa.astype(np.uint8)

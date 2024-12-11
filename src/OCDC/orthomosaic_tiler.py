@@ -47,7 +47,7 @@ class Tile:
                 (self.ulc[0], self.lrc[0]),
                 (self.ulc[1], self.lrc[1]),
             )
-            img = src.read(window=window)
+            img: NDArray[Any] = src.read(window=window)
             mask = src.read_masks(window=window)
             self.mask = mask[0]
             for band in range(mask.shape[0]):

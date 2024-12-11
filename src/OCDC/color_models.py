@@ -17,14 +17,14 @@ class ReferencePixels:
         *,
         reference: pathlib.Path,
         annotated: pathlib.Path,
-        bands_to_use: tuple[int, ...] | None,
+        bands_to_use: tuple[int, ...] | list[int] | None,
         alpha_channel: int | None = -1,
         transform: BaseTransformer | None,
         **kwargs: Any,
     ):
         self.reference_image_filename = reference
         self.mask_filename = annotated
-        self.bands_to_use: tuple[int, ...] | None = bands_to_use
+        self.bands_to_use: tuple[int, ...] | list[int] | None = bands_to_use
         self.alpha_channel: int | None = alpha_channel
         self.transform: BaseTransformer | None = transform
         self.reference_image: NDArray[Any] = np.zeros(0)
