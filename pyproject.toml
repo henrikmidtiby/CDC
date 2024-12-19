@@ -96,13 +96,6 @@ ignore = [
   # docstring ignores - conflicting rules
   "D203",
   "D212",
-  # missing docstrings
-  "D100",
-  "D101",
-  "D102",
-  "D103",
-  "D104",
-  "D107",
   # as recommended by https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
   "D206",
   "D300",
@@ -110,9 +103,18 @@ ignore = [
   "E114",
   "E117",
   "E501",
-  # due to use of * import
+  # still using D102 since docstring inherited is not supported in ruff"
+  "D102",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+  "F401",
   "F403",
 ]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
 
 [tool.ruff.format]
 docstring-code-format = true
