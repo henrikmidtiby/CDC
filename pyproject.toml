@@ -110,6 +110,8 @@ ignore = [
   "E114",
   "E117",
   "E501",
+  # due to use of * import
+  "F403",
 ]
 
 [tool.ruff.format]
