@@ -1,3 +1,5 @@
+"""Transform images when they are read."""
+
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any
@@ -7,7 +9,7 @@ from numpy.typing import NDArray
 
 
 class BaseTransformer(ABC):
-    """Base class for all color distance models."""
+    """Base class for transforms."""
 
     @abstractmethod
     def __init__(self) -> None:
@@ -15,11 +17,33 @@ class BaseTransformer(ABC):
 
     @abstractmethod
     def transform(self, image: NDArray[Any]) -> NDArray[Any]:
+        """
+        Transform the image.
+
+        Parameters
+        ----------
+        image : np.ndarray
+            The image to apply the transform to.
+
+        Returns
+        -------
+        np.ndarray
+            the transformed image.
+
+        """
         pass
 
 
 class GammaTransform(BaseTransformer):
-    """Transform for gamma correction."""
+    """
+    Transform images with a gamma correction.
+
+    Parameters
+    ----------
+    gamma
+        The gamma value to use for the gamma correction.
+
+    """
 
     def __init__(self, gamma: float) -> None:
         if not gamma > 0:
@@ -34,7 +58,31 @@ class GammaTransform(BaseTransformer):
 
 
 class LambdaTransform(BaseTransformer):
-    """Transform images using an Lambda expression."""
+    """
+    Transform images using an Lambda expression.
+
+    Parameters
+    ----------
+    lambda_expression : Callable[[np.ndarray], np.ndarray] | str
+        Either a function which takes the images and perform the transformation.
+        Or a string in the form of a python lambda expression.
+
+    Examples
+    --------
+    Using a function:
+
+    >>> from OCDC.transforms import LambdaTransform
+    >>> def normalize(image):
+    ...     return image / np.max(image)
+    >>> transform = LambdaTransform(normalize)
+
+    Using a string:
+
+    >>> from OCDC.transforms import LambdaTransform
+    >>> lambda_str = "lambda im: im/np.min(im) + 50"
+    >>> transform = LambdaTransform(lambda_str)
+
+    """
 
     def __init__(self, lambda_expression: Callable[[NDArray[Any]], NDArray[Any]] | str) -> None:
         if isinstance(lambda_expression, str):
