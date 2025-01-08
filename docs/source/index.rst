@@ -43,8 +43,6 @@ Index
 
    installation
    tutorials_guides
-   cli
    reference
-   changelog
    contributing
    calculate_dist
