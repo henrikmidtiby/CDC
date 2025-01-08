@@ -44,5 +44,6 @@ Index
    installation
    tutorials_guides
    reference
+   CLI
    contributing
    calculate_dist

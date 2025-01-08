@@ -43,6 +43,7 @@ dev = [
   "furo>=2024.8.6",
   "sphinx_copybutton>=0.5.2",
   "sphinx_reredirects>=0.1.5",
+  "sphinx-argparse>=0.5.2",
 ]
 test = [
   "pytest>=8.3.4",
@@ -54,6 +55,7 @@ doc = [
   "furo>=2024.8.6",
   "sphinx_copybutton>=0.5.2",
   "sphinx_reredirects>=0.1.5",
+  "sphinx-argparse>=0.5.2",
 ]
 
 [project.scripts]
@@ -114,6 +116,7 @@ ignore = [
   "F403",
 ]
 "tests/*" = ["D"]
+"docs/*" = ["D"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

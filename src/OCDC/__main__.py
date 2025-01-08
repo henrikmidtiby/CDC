@@ -13,7 +13,7 @@ from OCDC.tiled_color_based_distance import TiledColorBasedDistance
 from OCDC.transforms import BaseTransform, GammaTransform, LambdaTransform
 
 
-def _parse_args(args: Any = None) -> Any:
+def _get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ColorDistanceCalculatorForOrthomosaics",
         description="A tool for calculating color distances in an "
@@ -103,6 +103,11 @@ def _parse_args(args: Any = None) -> Any:
         metavar="LAMBDA",
         help="Apply a Lambda transform with the given Lambda expression to all inputs. Numpy is available as np. Default no transform.",
     )
+    return parser
+
+
+def _parse_args(args: Any = None) -> Any:
+    parser = _get_parser()
     return parser.parse_args(args)
 
 

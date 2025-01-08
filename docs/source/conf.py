@@ -30,6 +30,7 @@ extensions = [
     "myst_parser",
     "sphinx_copybutton",
     "sphinx_reredirects",
+    "sphinxarg.ext",
 ]
 
 templates_path = ["_templates"]
