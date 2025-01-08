@@ -15,7 +15,7 @@ from OCDC.transforms import BaseTransform, GammaTransform, LambdaTransform
 
 def _parse_args(args: Any = None) -> Any:
     parser = argparse.ArgumentParser(
-        prog="ColorDistranceCalculatorForOrthomosaics",
+        prog="ColorDistanceCalculatorForOrthomosaics",
         description="A tool for calculating color distances in an "
         "orthomosaic to a reference color based on samples from "
         "an annotated image.",
@@ -31,7 +31,7 @@ def _parse_args(args: Any = None) -> Any:
         default=None,
         type=int,
         nargs="+",
-        help="The bands needed to be analyzed, written as a list, 0 indexed. If no value is specified all bands except alpha channel will be analysed.",
+        help="The bands needed to be analyzed, written as a list, 0 indexed. If no value is specified all bands except alpha channel will be analyzed.",
     )
     parser.add_argument(
         "--alpha_channel",

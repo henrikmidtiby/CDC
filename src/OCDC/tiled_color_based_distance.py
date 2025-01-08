@@ -125,11 +125,11 @@ class TiledColorBasedDistance:
         plt.title("Histogram of pixel values")
         plt.xlabel("Pixel Value")
         plt.ylabel("Number of Pixels")
-        histrogram_filename = statistics_path.joinpath("Histogram of pixel values")
-        output_directory = os.path.dirname(histrogram_filename)
+        histogram_filename = statistics_path.joinpath("Histogram of pixel values")
+        output_directory = os.path.dirname(histogram_filename)
         if not os.path.isdir(output_directory):
             os.makedirs(output_directory)
-        plt.savefig(histrogram_filename, dpi=300)
+        plt.savefig(histogram_filename, dpi=300)
         plt.close()
         with open(statistics_path.joinpath("output_file.txt"), "w") as f:
             f.write("Input parameters:\n")
