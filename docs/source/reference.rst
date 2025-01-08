@@ -9,4 +9,4 @@ Reference Manual
     transforms
     color_models
     orthomosaic_tiler
-    tiled_color_based_segmenter
+    tiled_color_based_distance

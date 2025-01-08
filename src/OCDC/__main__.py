@@ -9,7 +9,7 @@ import pathlib
 from typing import Any
 
 from OCDC.color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
-from OCDC.tiled_color_based_segmenter import TiledColorBasedSegmenter
+from OCDC.tiled_color_based_distance import TiledColorBasedDistance
 from OCDC.transforms import BaseTransform, GammaTransform, LambdaTransform
 
 
@@ -46,9 +46,9 @@ def _parse_args(args: Any = None) -> Any:
         help="The calculated distances are multiplied with this factor before the result is saved as an image. Default value is 5.",
     )
     parser.add_argument(
-        "--output_tile_location",
-        default="output/tiles",
-        help="The location in which to save the tiles.",
+        "--output_location",
+        default="output",
+        help="The location in which to save the tiles and orthomosaic.",
         type=pathlib.Path,
     )
     parser.add_argument(
@@ -133,9 +133,8 @@ def _main() -> None:
     keyword_args = vars(args)
     keyword_args.update(_process_transform_args(args))
     color_model = _process_color_model_args(args, keyword_args)
-    tcbs = TiledColorBasedSegmenter(color_model=color_model, **keyword_args)
+    tcbs = TiledColorBasedDistance(color_model=color_model, **keyword_args)
     tcbs.process_tiles()
-    tcbs.calculate_statistics()
     tcbs.save_statistics(args)
 
 

@@ -1,3 +1,5 @@
+"""Colorbased distance calculation on tiles."""
+
 import os
 import pathlib
 from datetime import datetime
@@ -12,62 +14,114 @@ from OCDC.color_models import BaseDistance
 from OCDC.orthomosaic_tiler import OrthomosaicTiles
 
 
-class TiledColorBasedSegmenter:
+class TiledColorBasedDistance:
+    """
+    Calculate color based distance on tiled orthomosaic.
+
+    Parameters
+    ----------
+    color_model
+        The color model to use for distance calculations.
+    scale
+        A scale factor to scale the calculated distances with.
+    output_location
+        Where output orthomosaic and tiles are saved.
+    kwargs
+        Arguments to pass on to OrthomosaicTiles.
+    """
+
     def __init__(
         self,
         *,
         color_model: BaseDistance,
         scale: float,
-        output_tile_location: pathlib.Path,
+        output_location: pathlib.Path,
         **kwargs: Any,
     ):
         self.ortho_tiler = OrthomosaicTiles(**kwargs)
-        self.output_tile_location = output_tile_location
+        self.output_location = output_location
         self.colormodel = color_model
         self.output_scale_factor = scale
-        self.image_statistics = np.zeros(256)
         self.ortho_tiler.divide_orthomosaic_into_tiles()
 
     @staticmethod
-    def convertScaleAbs(img: NDArray[Any], alpha: float) -> NDArray[Any]:
-        scaled_img: NDArray[Any] = np.minimum(np.abs(alpha * img), 255)
+    def convertScaleAbs(image: NDArray[Any], alpha: float) -> NDArray[Any]:
+        """
+        Scale image by alpha and take the absolute value.
+
+        Parameters
+        ----------
+        image : np.ndarray
+
+        Returns
+        -------
+        np.ndarray
+        """
+        scaled_img: NDArray[Any] = np.minimum(np.abs(alpha * image), 255)
         return scaled_img
 
     def process_image(self, image: NDArray[Any]) -> NDArray[Any]:
+        """
+        Calculate the color based distance on image.
+
+        Parameters
+        ----------
+        image : np.ndarray
+
+        Returns
+        -------
+        np.ndarray
+        """
         distance_image = self.colormodel.calculate_distance(image)
         distance = self.convertScaleAbs(distance_image, alpha=self.output_scale_factor)
         distance = distance.astype(np.uint8)
         return distance
 
-    def process_tiles(self, save_tiles: bool = True, save_ortho: bool = True) -> None:
+    def process_tiles(self, save_tiles: bool = False, save_ortho: bool = True) -> None:
+        """
+        Calculate color based distance on all tiles and save output.
+
+        Parameters
+        ----------
+        save_tiles
+            Save all tiles to output_location.
+        save_ortho
+            Save orthomosaic to output_location
+        """
         for tile in tqdm(self.ortho_tiler.tiles):
             img = tile.read_tile(self.ortho_tiler.orthomosaic)
             distance_img = self.process_image(img)
             if save_tiles:
-                tile.save_tile(distance_img, self.output_tile_location)
+                tile.save_tile(distance_img, self.output_location)
             tile.output = distance_img
         if save_ortho:
-            output_filename = self.output_tile_location.joinpath("orthomosaic.tiff")
+            output_filename = self.output_location.joinpath("orthomosaic.tiff")
             self.ortho_tiler.save_orthomosaic_from_tile_output(output_filename)
 
-    def calculate_statistics(self) -> None:
+    def _calculate_statistics(self) -> tuple[NDArray[Any], float]:
+        image_statistics = np.zeros(256)
         for tile in self.ortho_tiler.tiles:
             output = np.where(tile.mask > 0, tile.output, np.nan)
             if np.max(output) != np.min(output):
-                image_statistics = np.histogram(output, bins=256, range=(0, 255))[0]
-                self.image_statistics += image_statistics
+                image_statistics += np.histogram(output, bins=256, range=(0, 255))[0]
         mean_divide = 0
         mean_sum = 0
         for x in range(0, 256):
-            mean_sum += self.image_statistics[x] * x
-            mean_divide += self.image_statistics[x]
-        self.mean_pixel_value = mean_sum / mean_divide
+            mean_sum += image_statistics[x] * x
+            mean_divide += image_statistics[x]
+        mean_pixel_value = mean_sum / mean_divide
+        return image_statistics, mean_pixel_value
 
     def save_statistics(self, args: Any) -> None:
-        statistics_path = self.output_tile_location.joinpath("statistics")
+        """
+        Calculate a histogram of the color based distance from all tiles.
+        Save histogram in output_location/statistics with a txt file of metadata.
+        """
+        histogram, mean_pixel_value = self._calculate_statistics()
+        statistics_path = self.output_location.joinpath("statistics")
         print(f'Writing statistics to the folder "{ statistics_path }"')
         # Plot histogram of pixel values
-        plt.plot(self.image_statistics)
+        plt.plot(histogram)
         plt.title("Histogram of pixel values")
         plt.xlabel("Pixel Value")
         plt.ylabel("Number of Pixels")
@@ -90,11 +144,9 @@ class TiledColorBasedSegmenter:
             f.write(f" - Pixel mask file: {args.mask_file_name}\n")
             f.write(f" - Date and time of execution: {datetime.now().replace(microsecond=0)}\n")
             f.write("\n\nOutput from run\n")
-            # TODO: Add support for GMM models so their parameters can also be saved
-            # in the output_file.txt.
             f.write(" - Average color value of annotated pixels\n")
             f.write(f" - {self.colormodel.average}\n")
             f.write(" - Covariance matrix of the annotated pixels\n")
             f.write(" - " + str(self.colormodel.covariance).replace("\n", "\n   ") + "\n")
-            f.write(f" - Mean pixel value: {self.mean_pixel_value}\n")
+            f.write(f" - Mean pixel value: {mean_pixel_value}\n")
             f.write(f" - Number of tiles: {len(self.ortho_tiler.tiles)}\n")

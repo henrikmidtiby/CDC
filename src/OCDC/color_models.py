@@ -14,7 +14,24 @@ from OCDC.transforms import BaseTransform
 
 
 class ReferencePixels:
-    """A Class for handling the reference pixels."""
+    """
+    A Class for handling the reference pixels.
+
+    Parameters
+    ----------
+    reference
+        Reference image from which the pixels are extracted.
+    annotated
+        Image with annotated pixels locations for extraction.
+    bands_to_use
+        Which bands to extract pixel values from.
+    alpha_channel
+        Which channel is the alpha channel.
+    transform
+        A transform to apply on the extracted pixels.
+    kwargs
+        Not used.
+    """
 
     def __init__(
         self,

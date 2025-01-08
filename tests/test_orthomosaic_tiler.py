@@ -54,9 +54,9 @@ class TestOrthomosaicTiler(unittest.TestCase):
         with self.monkeypatch.context() as mp:
             mp.setattr(OrthomosaicTiles, "get_orthomosaic_data", mock_get_orthomosaic_data)
             ortho_tiler = OrthomosaicTiles(**orthomosaic_tiler_args)  # type: ignore[arg-type]
-            tiles, _, _ = ortho_tiler.define_tiles()
+            tiles, _, _ = ortho_tiler._define_tiles()
             assert len(tiles) == int(8000 / 400 + 1) * int(4000 / 400 + 1)
-            p_tiles = ortho_tiler.get_processing_tiles()
+            p_tiles = ortho_tiler.get_tiles()
             assert len(p_tiles) == int(8000 / 400 + 1) * int(4000 / 400 + 1)
             s_tiles = ortho_tiler.get_list_of_specified_tiles(p_tiles)
             assert len(s_tiles) == 3
@@ -73,7 +73,7 @@ class TestOrthomosaicTiler(unittest.TestCase):
             ortho_tiler.run_specific_tileset = None
             with pytest.raises(IndexError):
                 ortho_tiler.get_list_of_specified_tiles(p_tiles)
-            ortho_tiler.run_specific_tile = 5000
+            ortho_tiler.run_specific_tile = 5000  # type: ignore[assignment]
             with pytest.raises(TypeError):
                 ortho_tiler.get_list_of_specified_tiles(p_tiles)
             ortho_tiler.run_specific_tile = None

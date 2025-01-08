@@ -23,7 +23,7 @@ class TestArgsParser(unittest.TestCase):
         assert parser.bands_to_use is None
         assert parser.alpha_channel == -1
         assert parser.scale == 5
-        assert parser.output_tile_location == pathlib.Path("output/tiles")
+        assert parser.output_location == pathlib.Path("output")
         assert parser.mask_file_name == pathlib.Path("pixel_values")
         assert parser.method == "mahalanobis"
         assert parser.param == 2
@@ -53,7 +53,7 @@ class TestArgsParser(unittest.TestCase):
                 "4",
                 "--scale",
                 "2",
-                "--output_tile_location",
+                "--output_location",
                 "/test/home/output",
                 "--mask_file_name",
                 "/test/home/mask_pixels",
@@ -78,7 +78,7 @@ class TestArgsParser(unittest.TestCase):
         assert parser.bands_to_use == [0, 1, 2]
         assert parser.alpha_channel == 4
         assert parser.scale == 2
-        assert parser.output_tile_location == pathlib.Path("/test/home/output")
+        assert parser.output_location == pathlib.Path("/test/home/output")
         assert parser.mask_file_name == pathlib.Path("/test/home/mask_pixels")
         assert parser.method == "gmm"
         assert parser.param == 5

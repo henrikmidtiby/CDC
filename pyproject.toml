@@ -109,6 +109,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = [
+  "D104",
   "F401",
   "F403",
 ]
