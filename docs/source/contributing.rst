@@ -30,3 +30,31 @@ Install pre-commit hooks
     pre-commit install
 
 You are now ready to contribute.
+
+Running Test
+------------
+
+Test is automatically run when making a commit, but can also be run with:
+
+.. code-block:: shell
+
+    pytest
+
+To generate a coverage report run pytest with the following arguments:
+
+.. code-block:: shell
+
+    pytest --cov=OCDC --cov-report html
+
+This generates a coverage report in *test_coverage*.
+
+Generating Documentation
+------------------------
+
+To generate this dokumentaion, in the *docs* folder run:
+
+.. code-block:: shell
+
+    make html
+
+This will generate html dokumentation in the *docs/build/html* folder.
