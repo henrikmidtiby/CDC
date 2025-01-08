@@ -8,7 +8,7 @@ import numpy as np  # noqa: F401 # so numpy can be used in lambdas
 from numpy.typing import NDArray
 
 
-class BaseTransformer(ABC):
+class BaseTransform(ABC):
     """Base class for transforms."""
 
     @abstractmethod
@@ -34,7 +34,7 @@ class BaseTransformer(ABC):
         pass
 
 
-class GammaTransform(BaseTransformer):
+class GammaTransform(BaseTransform):
     """
     Transform images with a gamma correction.
 
@@ -57,7 +57,7 @@ class GammaTransform(BaseTransformer):
         return gamma_corrected_image
 
 
-class LambdaTransform(BaseTransformer):
+class LambdaTransform(BaseTransform):
     """
     Transform images using an Lambda expression.
 

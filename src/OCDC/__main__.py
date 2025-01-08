@@ -1,13 +1,19 @@
+"""
+CLI for running Color Segmentation on an Orthomosaic.
+
+See ``OCDC --help`` for a list of arguments.
+"""
+
 import argparse
 import pathlib
 from typing import Any
 
 from OCDC.color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
 from OCDC.tiled_color_based_segmenter import TiledColorBasedSegmenter
-from OCDC.transforms import BaseTransformer, GammaTransform, LambdaTransform
+from OCDC.transforms import BaseTransform, GammaTransform, LambdaTransform
 
 
-def parse_args(args: Any = None) -> Any:
+def _parse_args(args: Any = None) -> Any:
     parser = argparse.ArgumentParser(
         prog="ColorDistranceCalculatorForOrthomosaics",
         description="A tool for calculating color distances in an "
@@ -25,7 +31,7 @@ def parse_args(args: Any = None) -> Any:
         default=None,
         type=int,
         nargs="+",
-        help="The bands needed to be analysed, written as a list, 0 indexed. If no value is specified all bands except alpha channel will be analysed.",
+        help="The bands needed to be analyzed, written as a list, 0 indexed. If no value is specified all bands except alpha channel will be analysed.",
     )
     parser.add_argument(
         "--alpha_channel",
@@ -100,8 +106,8 @@ def parse_args(args: Any = None) -> Any:
     return parser.parse_args(args)
 
 
-def process_transform_args(args: Any) -> dict[str, BaseTransformer | None]:
-    transform: BaseTransformer | None = None
+def _process_transform_args(args: Any) -> dict[str, BaseTransform | None]:
+    transform: BaseTransform | None = None
     if args.gamma_transform is not None:
         transform = GammaTransform(args.gamma_transform)
     if args.lambda_transform is not None:
@@ -109,7 +115,7 @@ def process_transform_args(args: Any) -> dict[str, BaseTransformer | None]:
     return {"transform": transform}
 
 
-def process_color_model_args(args: Any, keyword_args: dict[str, Any], save_pixels_values: bool = True) -> BaseDistance:
+def _process_color_model_args(args: Any, keyword_args: dict[str, Any], save_pixels_values: bool = True) -> BaseDistance:
     if args.method == "mahalanobis":
         color_model: BaseDistance = MahalanobisDistance(**keyword_args)
     elif args.method == "gmm":
@@ -122,11 +128,11 @@ def process_color_model_args(args: Any, keyword_args: dict[str, Any], save_pixel
     return color_model
 
 
-def main() -> None:
-    args = parse_args()
+def _main() -> None:
+    args = _parse_args()
     keyword_args = vars(args)
-    keyword_args.update(process_transform_args(args))
-    color_model = process_color_model_args(args, keyword_args)
+    keyword_args.update(_process_transform_args(args))
+    color_model = _process_color_model_args(args, keyword_args)
     tcbs = TiledColorBasedSegmenter(color_model=color_model, **keyword_args)
     tcbs.process_tiles()
     tcbs.calculate_statistics()
@@ -134,4 +140,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    _main()

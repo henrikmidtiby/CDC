@@ -5,7 +5,7 @@ from typing import Any
 import numpy as np
 import pytest
 
-from OCDC.__main__ import parse_args, process_color_model_args, process_transform_args
+from OCDC.__main__ import _parse_args, _process_color_model_args, _process_transform_args
 from OCDC.color_models import GaussianMixtureModelDistance, MahalanobisDistance, ReferencePixels
 from OCDC.transforms import GammaTransform, LambdaTransform
 
@@ -14,7 +14,7 @@ test_reference_pixels_values = np.array([[5, 20, 99], [5, 20, 100], [5, 19, 101]
 
 class TestArgsParser(unittest.TestCase):
     def test_required_and_default_args(self) -> None:
-        parser = parse_args(["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png"])
+        parser = _parse_args(["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png"])
         # test required args
         assert parser.orthomosaic == pathlib.Path("/test/home/ortho.tiff")
         assert parser.reference == pathlib.Path("/test/home/ref.tiff")
@@ -34,13 +34,13 @@ class TestArgsParser(unittest.TestCase):
         assert parser.lambda_transform is None
         # test missing required args
         with pytest.raises(SystemExit):
-            parse_args(["/test/home/ortho.tiff", "/test/home/ref.tiff"])
+            _parse_args(["/test/home/ortho.tiff", "/test/home/ref.tiff"])
         with pytest.raises(SystemExit):
-            parse_args([])
+            _parse_args([])
 
     def test_optional_args_with_different_values(self) -> None:
         # test all other arguments
-        parser = parse_args(
+        parser = _parse_args(
             [
                 "/test/home/ortho.tiff",
                 "/test/home/ref.tiff",
@@ -91,13 +91,13 @@ class TestArgsParser(unittest.TestCase):
 
 class TestArgParserTransforms(unittest.TestCase):
     def test_transform_args(self) -> None:
-        args = parse_args(
+        args = _parse_args(
             ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--gamma_transform", "0.5"]
         )
-        transform_args = process_transform_args(args)
+        transform_args = _process_transform_args(args)
         assert isinstance(transform_args["transform"], GammaTransform)
         assert transform_args["transform"].gamma == 0.5
-        args = parse_args(
+        args = _parse_args(
             [
                 "/test/home/ortho.tiff",
                 "/test/home/ref.tiff",
@@ -106,10 +106,10 @@ class TestArgParserTransforms(unittest.TestCase):
                 "lambda x: x+5",
             ]
         )
-        transform_args = process_transform_args(args)
+        transform_args = _process_transform_args(args)
         assert isinstance(transform_args["transform"], LambdaTransform)
-        args = parse_args(["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png"])
-        transform_args = process_transform_args(args)
+        args = _parse_args(["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png"])
+        transform_args = _process_transform_args(args)
         assert transform_args["transform"] is None
 
 
@@ -125,20 +125,20 @@ class TestArgParserColorModels(unittest.TestCase):
             self.values = test_reference_pixels_values
             self.transform = None
 
-        args = parse_args(
+        args = _parse_args(
             ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "mahalanobis"]
         )
         with self.monkeypatch.context() as mp:
             mp.setattr(ReferencePixels, "__init__", mock_reference_pixels_init)
-            color_model = process_color_model_args(args, vars(args), save_pixels_values=False)
+            color_model = _process_color_model_args(args, vars(args), save_pixels_values=False)
             assert isinstance(color_model, MahalanobisDistance)
-            args = parse_args(
+            args = _parse_args(
                 ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "gmm"]
             )
-            color_model = process_color_model_args(args, vars(args), save_pixels_values=False)
+            color_model = _process_color_model_args(args, vars(args), save_pixels_values=False)
             assert isinstance(color_model, GaussianMixtureModelDistance)
-            args = parse_args(
+            args = _parse_args(
                 ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "test_wrong"]
             )
             with pytest.raises(ValueError, match=r"Method must be one of 'mahalanobis' or 'gmm', but got (.*)"):
-                color_model = process_color_model_args(args, vars(args))
+                color_model = _process_color_model_args(args, vars(args))

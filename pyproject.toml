@@ -112,6 +112,7 @@ ignore = [
   "F401",
   "F403",
 ]
+"tests/*" = ["D"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

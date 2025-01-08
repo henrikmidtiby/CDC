@@ -49,9 +49,9 @@ test_gmm_1_res = np.array(
 test_gmm_2_res = np.array(
     [
         [
-            [38825.142373, 25277.867819, 41555.941951],
-            [23307.657938, 33230.944733, 43765.753982],
-            [7013.36822, 19791.385844, 30779.979503],
+            [38825.14226, 25277.867646, 41555.941845],
+            [23307.65775, 33230.944602, 43765.753882],
+            [7013.367596, 19791.385623, 30779.979361],
         ]
     ]
 )
@@ -72,9 +72,9 @@ class TestReferencePixels(unittest.TestCase):
             return mock_load_mask
 
         with self.monkeypatch.context() as mp:
-            mp.setattr(ReferencePixels, "load_reference_image", mock_load_reference_image)
+            mp.setattr(ReferencePixels, "_load_reference_image", mock_load_reference_image)
             # test mask with red annotations
-            mp.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_red_mask))
+            mp.setattr(ReferencePixels, "_load_mask", get_mock_load_mask(test_red_mask))
             ReferencePixels(
                 reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=(0, 1, 2), transform=None
             )
@@ -132,18 +132,18 @@ class TestReferencePixels(unittest.TestCase):
                     transform=None,
                 )
             # test black and white mask
-            mp.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_bw_mask))
+            mp.setattr(ReferencePixels, "_load_mask", get_mock_load_mask(test_bw_mask))
             ReferencePixels(
                 reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=None, transform=None
             )
             # test mask of the wrong type
-            mp.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_wrong_size_mask))
+            mp.setattr(ReferencePixels, "_load_mask", get_mock_load_mask(test_wrong_size_mask))
             with pytest.raises(TypeError):
                 ReferencePixels(
                     reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=None, transform=None
                 )
             # test mask which selects to few pixels
-            mp.setattr(ReferencePixels, "load_mask", get_mock_load_mask(test_too_small_mask))
+            mp.setattr(ReferencePixels, "_load_mask", get_mock_load_mask(test_too_small_mask))
             with pytest.raises(Exception, match=r"Not enough annotated pixels. Need at least \d+, but got \d+"):
                 ReferencePixels(
                     reference=pathlib.Path("test"), annotated=pathlib.Path("test"), bands_to_use=None, transform=None

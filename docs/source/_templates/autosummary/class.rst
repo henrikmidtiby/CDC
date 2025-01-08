@@ -8,6 +8,7 @@ Qualified name: ``{{ fullname | escape }}``
    :show-inheritance:
    :members:
    :private-members:
+   :inherited-members:
 
 
    {% block methods %}
@@ -16,7 +17,7 @@ Qualified name: ``{{ fullname | escape }}``
 
    .. autosummary::
       :nosignatures:
-      {% for item in methods if item != '__init__' and item not in inherited_members %}
+      {% for item in methods if item != '__init__' %}
       ~{{ name }}.{{ item }}
       {%- endfor %}
    {%- endif %}
