@@ -51,10 +51,10 @@ This generates a coverage report in *test_coverage*.
 Generating Documentation
 ------------------------
 
-To generate this dokumentaion, in the *docs* folder run:
+To generate this documentation, in the *docs* folder run:
 
 .. code-block:: shell
 
     make html
 
-This will generate html dokumentation in the *docs/build/html* folder.
+This will generate html documentation in the *docs/build/html* folder.
