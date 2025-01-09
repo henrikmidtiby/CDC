@@ -1,4 +1,6 @@
 on:
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -9,7 +11,6 @@ permissions:
 jobs:
   # Build job
   build:
-    # Specify runner +  build & upload the static files as an artifact
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,12 +19,11 @@ jobs:
         id: build
         run: |
           pip install .[docs]
-          make -C docs clean
           make -C docs html
 
       - name: Upload doc build as artifact
         id: deployment
-        uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
+        uses: actions/upload-pages-artifact@v3
         with:
           path: docs/build/html
 
