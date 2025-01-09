@@ -141,8 +141,8 @@ class BaseDistance(ABC):
     def __init__(self, **kwargs: Any):
         self.reference_pixels = ReferencePixels(**kwargs)
         self.bands_to_use = self.reference_pixels.bands_to_use
-        self.covariance: NDArray[Any]
-        """Covariance of the reference pixels."""
+        self.covariance: NDArray[np.float]
+        """np.ndarray : Covariance of the reference pixels."""
         self.average: float
         """Average of the reference pixels."""
         self._initialize()
@@ -160,7 +160,7 @@ class BaseDistance(ABC):
         pass
 
     @abstractmethod
-    def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
+    def calculate_distance(self, image: NDArray[np.int | np.float]) -> NDArray[np.float]:
         """
         Calculate the color distance for each pixel in the image to the reference.
 
