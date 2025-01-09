@@ -40,13 +40,7 @@ Test is automatically run when making a commit, but can also be run with:
 
     pytest
 
-To generate a coverage report run pytest with the following arguments:
-
-.. code-block:: shell
-
-    pytest --cov=OCDC --cov-report html
-
-This generates a coverage report in *test_coverage*.
+This will also generate a html coverage report in *test_coverage*.
 
 Generating Documentation
 ------------------------
