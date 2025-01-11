@@ -1,3 +1,5 @@
+name: Generate Docs and upload to pages.
+
 on:
   release:
     types: [published]
