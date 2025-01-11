@@ -1,4 +1,5 @@
 import pathlib
+import random
 import unittest
 from collections.abc import Callable
 from typing import Any
@@ -8,6 +9,9 @@ import pytest
 from numpy.typing import NDArray
 
 from OCDC.color_models import GaussianMixtureModelDistance, MahalanobisDistance, ReferencePixels
+
+random.seed(1234)
+np.random.seed(1234)
 
 test_reference_pixel_image = np.astype(
     np.arange(0, 3 * 20 * 20, 1).reshape((3, 20, 20)) / (3 * 20 * 20) * 255, np.uint8
@@ -168,8 +172,6 @@ class TestColorModels(unittest.TestCase):
             mp.setattr(ReferencePixels, "__init__", mock_reference_pixels_init)
             # test Mahalanobis distance calculations
             md = MahalanobisDistance(bands_to_use=[0, 1, 2])
-            print(np.linalg.det(md.calculate_distance(test_image)))
-            print(np.linalg.eig(md.calculate_distance(test_image)))
             np.testing.assert_almost_equal(md.calculate_distance(test_image), test_mahal_res, decimal=6)
             # test Gaussian Mixture Model distance calculations with 1 cluster
             gmmd1 = GaussianMixtureModelDistance(bands_to_use=[0, 1, 2], n_components=1)

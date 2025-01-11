@@ -160,7 +160,7 @@ class BaseDistance(ABC):
         pass
 
     @abstractmethod
-    def calculate_distance(self, image: NDArray[np.int | np.float]) -> NDArray[np.float]:
+    def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
         """
         Calculate the color distance for each pixel in the image to the reference.
 
