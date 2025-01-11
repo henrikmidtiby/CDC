@@ -2,9 +2,11 @@ name: Python tests
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    paths:
+      - src/**
+      - tests/**
+      - .github/workflows/tests.yml
+      - pyproject.toml
   workflow_dispatch:
 
 jobs:
@@ -34,11 +36,4 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest --cov --cov-report=xml --verbose
-
-    - name: Upload coverage report
-      if: ${{ matrix.platform == 'ubuntu-latest' && matrix.python-version == 3.12 }}
-      uses: codecov/codecov-action@v4
-      with:
-        token: c6ed6ca6-a040-4f23-9ebf-8c474c998097
-        file: ./coverage.xml
+        pytest
