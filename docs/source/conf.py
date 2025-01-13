@@ -5,6 +5,7 @@
 
 import os
 import sys
+from datetime import datetime
 
 import OCDC  # noqa: F401 #
 
@@ -15,8 +16,8 @@ sys.path.insert(0, os.path.abspath("."))
 
 
 project = "OCDC"
-copyright = "2024, Henrik Dyrberg Egemose"  # noqa: A001
-author = "Henrik Dyrberg Egemose"
+copyright = f"2023-{datetime.now().year}, SDU UAS Center"  # noqa: A001
+author = "SDU UAS Center"
 release = "v0.1.0"
 
 # -- General configuration ---------------------------------------------------

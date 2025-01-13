@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+from datetime import datetime
 from typing import Any
 
 from OCDC.color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
@@ -17,13 +18,13 @@ from OCDC.transforms import BaseTransform, GammaTransform, LambdaTransform
 
 def _get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="ColorDistanceCalculatorForOrthomosaics",
-        description="A tool for calculating color distances in an "
-        "orthomosaic to a reference color based on samples from "
-        "an annotated image.",
-        epilog="Program written by Henrik Skov Midtiby (hemi@mmmi.sdu.dk) in "
-        "2023 as part of the Precisionseedbreeding project supported "
-        "by GUDP and Frøafgiftsfonden.",
+        prog="OCDC",
+        description="""A tool for calculating color distances in an
+                       orthomosaic to a reference color based on
+                       samples from an annotated image.""",
+        epilog=f"""Program written by SDU UAS Center (hemi@mmmi.sdu.dk) in
+                   2023-{datetime.now().year} as part of the Precisionseedbreeding project
+                   supported by GUDP and Frøafgiftsfonden.""",
     )
     parser.add_argument("orthomosaic", help="Path to the orthomosaic that you want to process.", type=pathlib.Path)
     parser.add_argument("reference", help="Path to the reference image.", type=pathlib.Path)
