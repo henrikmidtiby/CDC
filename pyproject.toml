@@ -59,7 +59,7 @@ docs = [
 ]
 
 [project.scripts]
-OCDC = "OCDC.__main__:main"
+OCDC = "OCDC.__main__:_main"
 
 [tool.pytest.ini_options]
 addopts = "--cov=OCDC --cov-report html:test_coverage"
