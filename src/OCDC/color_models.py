@@ -244,7 +244,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         self.gmm.fit(self.reference_pixels.values.transpose())
         self.average = self.gmm.means_
         self.covariance = self.gmm.covariances_
-        self.min_score = np.min(self.gmm.score_samples(self.average))
+        self.min_score = np.min(self.gmm.score_samples(self.reference_pixels.values.transpose()))
 
     def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
         """
