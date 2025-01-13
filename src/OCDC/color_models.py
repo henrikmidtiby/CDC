@@ -1,5 +1,7 @@
 """Make a color model based on reference pixel color values."""
 
+from __future__ import annotations
+
 import os
 import pathlib
 from abc import ABC, abstractmethod
@@ -15,7 +17,7 @@ from OCDC.transforms import BaseTransform
 
 class ReferencePixels:
     """
-    A Class for handling the reference pixels.
+    A Class for handling the reference pixels for color models.
 
     Parameters
     ----------
@@ -29,7 +31,7 @@ class ReferencePixels:
         Which channel is the alpha channel.
     transform
         A transform to apply on the extracted pixels.
-    kwargs
+    **kwargs
         Not used.
     """
 
@@ -136,13 +138,20 @@ class ReferencePixels:
 
 
 class BaseDistance(ABC):
-    """Base class for all color distance models."""
+    """
+    Base class for all color distance models.
+
+    Parameters
+    ----------
+    **kwargs
+        Not used.
+    """
 
     def __init__(self, **kwargs: Any):
         self.reference_pixels = ReferencePixels(**kwargs)
         self.bands_to_use = self.reference_pixels.bands_to_use
-        self.covariance: NDArray[np.float]
-        """np.ndarray : Covariance of the reference pixels."""
+        self.covariance: NDArray[Any]
+        """Covariance of the reference pixels."""
         self.average: float
         """Average of the reference pixels."""
         self._initialize()
@@ -161,18 +170,7 @@ class BaseDistance(ABC):
 
     @abstractmethod
     def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
-        """
-        Calculate the color distance for each pixel in the image to the reference.
-
-        Parameters
-        ----------
-        image : np.ndarray
-
-        Returns
-        -------
-        np.ndarray
-            The distances for each pixel
-        """
+        """Calculate the color distance for each pixel in the image to the reference."""
         if self.reference_pixels.transform is not None:
             image = self.reference_pixels.transform.transform(image)
         return image
@@ -187,6 +185,11 @@ class MahalanobisDistance(BaseDistance):
     """
     A multivariate normal distribution used to describe the color of a set of
     pixels.
+
+    Parameters
+    ----------
+    **kwargs
+        Not used.
     """
 
     def __init__(self, **kwargs: Any):
@@ -200,15 +203,6 @@ class MahalanobisDistance(BaseDistance):
         """
         Calculate the color distance using mahalanobis
         for each pixel in the image to the reference.
-
-        Parameters
-        ----------
-        image : np.ndarray
-
-        Returns
-        -------
-        np.ndarray
-            The distances for each pixel
         """
         image = super().calculate_distance(image)
         assert self.bands_to_use is not None
@@ -232,6 +226,13 @@ class GaussianMixtureModelDistance(BaseDistance):
     """
     A Gaussian Mixture Model from sklearn where the loglikelihood is converted
     to a distance with so output is similar til mahalanobis.
+
+    Parameters
+    ----------
+    n_components
+        The number of mixture components.
+    **kwargs
+        Not used.
     """
 
     def __init__(self, n_components: int, **kwargs: Any):
@@ -249,15 +250,6 @@ class GaussianMixtureModelDistance(BaseDistance):
         """
         Calculate the color distance using a gaussian mixture model
         for each pixel in the image to the reference.
-
-        Parameters
-        ----------
-        image : np.ndarray
-
-        Returns
-        -------
-        np.ndarray
-            The distances for each pixel
         """
         image = super().calculate_distance(image)
         assert self.bands_to_use is not None

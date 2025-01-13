@@ -1,5 +1,7 @@
 """Colorbased distance calculation on tiles."""
 
+from __future__ import annotations
+
 import os
 import pathlib
 from datetime import datetime
@@ -26,8 +28,8 @@ class TiledColorBasedDistance:
         A scale factor to scale the calculated distances with.
     output_location
         Where output orthomosaic and tiles are saved.
-    kwargs
-        Arguments to pass on to OrthomosaicTiles.
+    **kwargs
+        Arguments to pass on to :class:`~OCDC.orthomosaic_tiler.OrthomosaicTiles`.
     """
 
     def __init__(
@@ -46,32 +48,12 @@ class TiledColorBasedDistance:
 
     @staticmethod
     def convertScaleAbs(image: NDArray[Any], alpha: float) -> NDArray[Any]:
-        """
-        Scale image by alpha and take the absolute value.
-
-        Parameters
-        ----------
-        image : np.ndarray
-
-        Returns
-        -------
-        np.ndarray
-        """
+        """Scale image by alpha and take the absolute value."""
         scaled_img: NDArray[Any] = np.minimum(np.abs(alpha * image), 255)
         return scaled_img
 
     def process_image(self, image: NDArray[Any]) -> NDArray[Any]:
-        """
-        Calculate the color based distance on image.
-
-        Parameters
-        ----------
-        image : np.ndarray
-
-        Returns
-        -------
-        np.ndarray
-        """
+        """Calculate the color based distance on image."""
         distance_image = self.colormodel.calculate_distance(image)
         distance = self.convertScaleAbs(distance_image, alpha=self.output_scale_factor)
         distance = distance.astype(np.uint8)

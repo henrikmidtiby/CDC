@@ -40,7 +40,10 @@ exclude_patterns: list[str] = []
 autosummary_generate = True
 
 autodoc_typehints = "description"
+autodoc_type_aliases = {"NDArray": "NDArray"}
 autoclass_content = "both"
+
+add_module_names = False
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

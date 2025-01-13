@@ -1,5 +1,7 @@
 """Tile Orthomosaics into smaller pieces for easier processing."""
 
+from __future__ import annotations
+
 import os
 import pathlib
 from typing import Any
@@ -62,14 +64,7 @@ class Tile:
         """np.ndarray : processed output of tile to save for later use."""
 
     def read_tile(self, orthomosaic_filename: pathlib.Path) -> NDArray[Any]:
-        """
-        Read the tiles image data from the orthomosaic.
-
-        Returns
-        -------
-        np.ndarray
-
-        """
+        """Read the tiles image data from the orthomosaic."""
         with rasterio.open(orthomosaic_filename) as src:
             window = Window.from_slices(
                 (self.ulc[0], self.lrc[0]),
@@ -83,14 +78,7 @@ class Tile:
         return img
 
     def save_tile(self, image: NDArray[Any], output_tile_location: pathlib.Path) -> None:
-        """
-        Save the image of the tile to a tiff file.
-        Filename is the tile number.
-
-        Parameters
-        ----------
-        image : np.ndarray
-        """
+        """Save the image of the tile to a tiff file. Filename is the tile number."""
         self.output = image
         if not output_tile_location.is_dir():
             os.makedirs(output_tile_location)
@@ -126,7 +114,7 @@ class OrthomosaicTiles:
         List of tiles to run e.g. [15, 65] runs tiles 15 and 65.
     run_specific_tileset
         List of ranges of tiles to run e.g. [15, 65] runs all tiles between 15 and 65.
-    kwargs
+    **kwargs
         Not used.
     """
 

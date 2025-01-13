@@ -1,5 +1,7 @@
 """Transform images when they are read."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any
@@ -22,14 +24,8 @@ class BaseTransform(ABC):
 
         Parameters
         ----------
-        image : np.ndarray
+        image
             The image to apply the transform to.
-
-        Returns
-        -------
-        np.ndarray
-            the transformed image.
-
         """
         pass
 
@@ -42,7 +38,6 @@ class GammaTransform(BaseTransform):
     ----------
     gamma
         The gamma value to use for the gamma correction.
-
     """
 
     def __init__(self, gamma: float) -> None:
@@ -63,7 +58,7 @@ class LambdaTransform(BaseTransform):
 
     Parameters
     ----------
-    lambda_expression : Callable[[np.ndarray], np.ndarray] | str
+    lambda_expression
         Either a function which takes the images and perform the transformation.
         Or a string in the form of a python lambda expression.
 
@@ -81,7 +76,6 @@ class LambdaTransform(BaseTransform):
     >>> from OCDC.transforms import LambdaTransform
     >>> lambda_str = "lambda im: im/np.min(im) + 50"
     >>> transform = LambdaTransform(lambda_str)
-
     """
 
     def __init__(self, lambda_expression: Callable[[NDArray[Any]], NDArray[Any]] | str) -> None:

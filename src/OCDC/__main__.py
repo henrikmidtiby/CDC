@@ -4,6 +4,8 @@ CLI for running Color Segmentation on an Orthomosaic.
 See ``OCDC --help`` for a list of arguments.
 """
 
+from __future__ import annotations
+
 import argparse
 import pathlib
 from typing import Any
