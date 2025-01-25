@@ -1,7 +1,9 @@
 Turorial
 ========
 
-An example dataset for the can be downloaded from zenodo on this link: https://zenodo.org/record/8254412.
+In this tutorial we will show how *OCDCs* CLI can be used on an example dataset of pumpkins to extract the pumpkins in the orthomosaic.
+
+The example dataset can be downloaded from Zenodo on this link: https://zenodo.org/record/8254412.
 
 The example dataset is from a pumpkin field, where the orange pumpkins can be seen on a gray background. save the example dataset in an easy to reach location on your computer, for this tutorial we will placed it in the following directory: */home/ocdc/example_dataset*.
 
@@ -44,9 +46,9 @@ To create a color model from the **crop_from_orthomosaic.tif** and the **crop_fr
 
     OCDC 20190920_pumpkins_field_101_and_109-cropped.tif \
         crop_from_orthomosaic.tif \
-        crop_from_orthomosaic_annotated.tif \
+        crop_from_orthomosaic_annotated.tif
 
-This will take a little time but a progressbar will be shown.
+This will take a little time but a progress bar will be shown.
 
 The output is new georeferenced orthomosaic with the calculated color distances to the reference color as grayscale. Here is a small part of the orthomosaic shown, right below is the same area in the input orthomosaic.
 
@@ -57,12 +59,12 @@ The output is new georeferenced orthomosaic with the calculated color distances 
 In addition to generating the processed orthomosaic, the *OCDC* also have exported a file **pixel_values.csv** that contains all the color values of the annotated pixels. This can be used to gain a better understanding of the segmentation process. Each row corresponds to the color value of one pixel.
 
 === === ===
-b   g   r
+r   g   b
 === === ===
-23  128	214
-35  131	223
-39  130	220
-27  134	220
+214 128 23
+223 131 35
+220 130 39
+220 134 27
 ... ... ...
 === === ===
 
