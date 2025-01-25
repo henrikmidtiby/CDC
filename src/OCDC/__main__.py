@@ -131,7 +131,7 @@ def _process_color_model_args(args: Any, keyword_args: dict[str, Any], save_pixe
     else:
         raise ValueError(f"Method must be one of 'mahalanobis' or 'gmm', but got {args.method}")
     if save_pixels_values:
-        pixels_filename = args.output_tile_location.joinpath(f"{args.mask_file_name}.csv")
+        pixels_filename = args.output_location.joinpath(f"{args.mask_file_name}.csv")
         color_model.save_pixel_values(pixels_filename)
     return color_model
 
@@ -142,7 +142,7 @@ def _main() -> None:
     keyword_args.update(_process_transform_args(args))
     color_model = _process_color_model_args(args, keyword_args)
     tcbs = TiledColorBasedDistance(color_model=color_model, **keyword_args)
-    tcbs.process_tiles()
+    tcbs.process_tiles(save_tiles=args.save_tiles, save_ortho=args.do_not_save_orthomosaic)
     tcbs.save_statistics(args)
 
 

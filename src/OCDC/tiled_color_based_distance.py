@@ -74,7 +74,7 @@ class TiledColorBasedDistance:
             img = tile.read_tile(self.ortho_tiler.orthomosaic)
             distance_img = self.process_image(img)
             if save_tiles:
-                tile.save_tile(distance_img, self.output_location)
+                tile.save_tile(distance_img, self.output_location.joinpath("tiles/"))
             tile.output = distance_img
         if save_ortho:
             output_filename = self.output_location.joinpath("orthomosaic.tiff")
@@ -120,7 +120,7 @@ class TiledColorBasedDistance:
             f.write(f" - Annotated image: {args.annotated}\n")
             f.write(f" - Output scale factor: {args.scale}\n")
             f.write(f" - Tile sizes: {args.tile_size}\n")
-            f.write(f" - Output tile location: {args.output_tile_location}\n")
+            f.write(f" - Output tile location: {args.output_location}\n")
             f.write(f" - Method: {args.method}\n")
             f.write(f" - Parameter: {args.param}\n")
             f.write(f" - Pixel mask file: {args.mask_file_name}\n")
