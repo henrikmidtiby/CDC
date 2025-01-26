@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # import OCDC objects
 from .color_models import *
 from .orthomosaic_tiler import *

@@ -137,8 +137,13 @@ class TestArgParserColorModels(unittest.TestCase):
             )
             color_model = _process_color_model_args(args, vars(args), save_pixels_values=False)
             assert isinstance(color_model, GaussianMixtureModelDistance)
+            with pytest.raises(SystemExit):
+                args = _parse_args(
+                    ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "test_wrong"]
+                )
             args = _parse_args(
-                ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "test_wrong"]
+                ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "gmm"]
             )
+            args.method = "test_wrong"
             with pytest.raises(ValueError, match=r"Method must be one of 'mahalanobis' or 'gmm', but got (.*)"):
                 color_model = _process_color_model_args(args, vars(args))

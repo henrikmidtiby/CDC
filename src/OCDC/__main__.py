@@ -55,6 +55,16 @@ def _get_parser() -> argparse.ArgumentParser:
         type=pathlib.Path,
     )
     parser.add_argument(
+        "--do_not_save_orthomosaic",
+        action="store_false",
+        help="If set the no orthomosaic of the result is saved at output_location/orthomosaic.tiff. Default is to save orthomosaic.",
+    )
+    parser.add_argument(
+        "--save_tiles",
+        action="store_true",
+        help="If set tiles are saved at output_location/tiles. Useful for debugging or parameter tweaking. Default no tiles are saved.",
+    )
+    parser.add_argument(
         "--mask_file_name",
         default="pixel_values",
         type=pathlib.Path,
@@ -64,6 +74,7 @@ def _get_parser() -> argparse.ArgumentParser:
         "--method",
         default="mahalanobis",
         type=str,
+        choices=["mahalanobis", "gmm"],
         help="The method used for calculating distances from the set of annotated pixels. Possible values are 'mahalanobis' for using the Mahalanobis distance and 'gmm' for using a Gaussian Mixture Model. 'mahalanobis' is the default value.",
     )
     parser.add_argument(
@@ -138,6 +149,7 @@ def _process_color_model_args(args: Any, keyword_args: dict[str, Any], save_pixe
 
 def _main() -> None:
     args = _parse_args()
+    print(args)
     keyword_args = vars(args)
     keyword_args.update(_process_transform_args(args))
     color_model = _process_color_model_args(args, keyword_args)
