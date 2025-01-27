@@ -37,7 +37,7 @@ class GammaTransform(BaseTransform):
     Parameters
     ----------
     gamma
-        The gamma value to use for the gamma correction.
+        The gamma value to use for the gamma correction. Must be positive.
     """
 
     def __init__(self, gamma: float) -> None:
