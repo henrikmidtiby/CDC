@@ -117,22 +117,27 @@ class ReferencePixels:
                 f"Not enough annotated pixels. Need at least {min_annotated_pixels}, but got {self.values.shape[1]}"
             )
 
+    def _is_int(self, array: NDArray[Any]) -> bool:
+        diff = np.abs(array - array.astype(int))
+        return bool(np.all(diff < 1e-10))
+
     def save_pixel_values_to_file(self, filename: pathlib.Path) -> None:
         """Save pixel values to csv file with tab delimiter."""
         output_directory = os.path.dirname(filename)
         if not os.path.isdir(output_directory):
             os.makedirs(output_directory)
+        if self._is_int(self.values):
+            fmt = "%i"
+        else:
+            fmt = "%f"
+        csv_header = "".join([f"c{x}\t" for x in range(self.values.shape[0])])[:-1]
         print(f'Writing pixel values to the file "{ filename }"')
         np.savetxt(
             filename,
             self.values.transpose(),
             delimiter="\t",
-            # fmt="%i",
-            # header=self.color_space.color_space[0]
-            # + "\t"
-            # + self.color_space.color_space[1]
-            # + "\t"
-            # + self.color_space.color_space[2],
+            fmt=fmt,
+            header=csv_header,
             comments="",
         )
 
