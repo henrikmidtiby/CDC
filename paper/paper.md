@@ -5,12 +5,15 @@ Tags:
   - Computer Vision
   - Orthomosaic
   - UAV
-  - Image processing
+  - Image Processing
   - Color Distance
 authors:
   - name: Henrik Skov Midtiby
+    orcid: 0000-0002-3310-5680
     affiliation: '1'
   - name: Henrik Dyrberg Egemose
+    corresponding: true
+    orcid: 0000-0002-6765-8216
     affiliation: '1'
   - name: Søren Vad Iversen
     affiliation: '1'
@@ -19,15 +22,20 @@ authors:
 affiliations:
   - index: 1
     name: The Mærsk Mc-Kinney Møller Institute, University of Southern Denmark
-date: 20 January 2025
+date: 30 January 2025
 bibliography: paper.bib
 ---
 
 # Summary
 
-A summary describing the high-level functionality and purpose of the software for a diverse, non-specialist audience.
+OCDC is a open-source python package for calculating color distances in images. It is specifically made for handling large orthomosaics and multispectral data. By providing OCDC with reference pixels it calculates the distance using Mahalanobis distance or a Gaussian Mixture Model for all pixels in the orthomosaic. OCDCs main function are exposed as a command line interface where providing an orthomosaic, reference image and a mask will output a new orthomosaic with the color distances. The python package also allow for using OCDC as a library for more complex tasks.
 
 # Statement of need
+
+- precision agriculture
+- improved segmentation
+- multispectral
+- able to handle large orthomosaic by tiling.
 
 A Statement of need section that clearly illustrates the research purpose of the software and places it in the context of related work.
 
@@ -37,17 +45,13 @@ Mention (if applicable) a representative set of past or ongoing research project
 
 # Acknowledgements
 
-Acknowledgement of any financial support.
+the OCDC tool was developed by SDU UAS Center as part of the project Præcisionsfrøavl, that was supported by the [Green Development and Demonstration Programme (GUDP)](https://gudp.lbst.dk/) and [Frøafgiftsfonden](https://froeafgiftsfonden.dk/) both from Denmark.
 
 # References
 
 Notes: (to be deleted)
 
 The paper should be between 250-1000 words
-
-todo:
-
-- update Tags
 
 review_checklist:
 
