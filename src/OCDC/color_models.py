@@ -125,7 +125,9 @@ class ReferencePixels:
         diff = np.abs(array - array.astype(int))
         return bool(np.all(diff < 1e-10))
 
-    def save_pixel_values_to_file(self, filename: pathlib.Path, values: NDArray[Any]) -> None:
+    def save_pixel_values_to_file(
+        self, filename: pathlib.Path, values: NDArray[Any], header: str | None = None, raw: bool = True
+    ) -> None:
         """Save pixel values to csv file with tab delimiter."""
         output_directory = os.path.dirname(filename)
         if not os.path.isdir(output_directory):
@@ -134,7 +136,13 @@ class ReferencePixels:
             fmt = "%i"
         else:
             fmt = "%f"
-        csv_header = "".join([f"c{x}\t" for x in range(1, values.shape[0] + 1)])[:-1]
+        if header is None:
+            csv_header = "".join([f"c{x}\t" for x in range(1, values.shape[0] + 1)])[:-1]
+        elif raw:
+            csv_header = header.replace(",", "\t")
+        else:
+            header_list = header.split(",")
+            csv_header = "".join([f"{header_list[i]}\t" for i in self.bands_to_use])[:-1]  # type: ignore[union-attr]
         print(f'Writing pixel values to the file "{ filename }"')
         np.savetxt(
             filename,
@@ -169,14 +177,20 @@ class BaseDistance(ABC):
         self._calculate_statistics()
         self.show_statistics()
 
-    def save_pixel_values(self, output_location: pathlib.Path) -> None:
+    def save_pixel_values(
+        self, output_location: pathlib.Path, channel_names_in: str | None = None, channel_names_out: str | None = None
+    ) -> None:
         """Save raw, transformed and selected bands reference pixels to csv files."""
         raw = output_location.joinpath("pixel_values/raw.csv")
         transformed = output_location.joinpath("pixel_values/transformed.csv")
         selected = output_location.joinpath("pixel_values/selected.csv")
-        self.reference_pixels.save_pixel_values_to_file(raw, self.reference_pixels.values_raw)
-        self.reference_pixels.save_pixel_values_to_file(transformed, self.reference_pixels.values_transformed)
-        self.reference_pixels.save_pixel_values_to_file(selected, self.reference_pixels.values)
+        self.reference_pixels.save_pixel_values_to_file(raw, self.reference_pixels.values_raw, channel_names_in)
+        self.reference_pixels.save_pixel_values_to_file(
+            transformed, self.reference_pixels.values_transformed, channel_names_out
+        )
+        self.reference_pixels.save_pixel_values_to_file(
+            selected, self.reference_pixels.values, channel_names_out, raw=False
+        )
 
     @abstractmethod
     def _calculate_statistics(self) -> None:

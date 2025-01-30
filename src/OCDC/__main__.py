@@ -114,6 +114,18 @@ def _get_parser() -> argparse.ArgumentParser:
         type=int,
         help="Alpha channel number 0 indexed. If no value is specified the last channel is assumed to be the alpha channel. If the orthomosaic does not contain an alpha channel use None.",
     )
+    image_channels_group.add_argument(
+        "--channel_names_in",
+        default=None,
+        type=str,
+        help="Names of the image channels in the input image separated by comma, i.e. (R, G, B, A). Default channels are named c1, c2, ...",
+    )
+    image_channels_group.add_argument(
+        "--channel_names_out",
+        default=None,
+        type=str,
+        help="Names of the image channels after the transform separated by comma, i.e. (H, S, V). Default channels are named c1, c2, ...",
+    )
     tile_group = parser.add_argument_group("Tiles")
     tile_group.add_argument(
         "--tile_size",
@@ -165,7 +177,7 @@ def _process_color_model_args(args: Any, keyword_args: dict[str, Any]) -> BaseDi
     else:
         raise ValueError(f"Method must be one of 'mahalanobis' or 'gmm', but got {args.method}")
     if args.save_ref_pixels:
-        color_model.save_pixel_values(args.output_location)
+        color_model.save_pixel_values(args.output_location, args.channel_names_in, args.channel_names_out)
     return color_model
 
 
