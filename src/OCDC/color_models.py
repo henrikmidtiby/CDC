@@ -81,8 +81,6 @@ class ReferencePixels:
     def _load_reference_image(self, filename_reference_image: pathlib.Path) -> None:
         with rasterio.open(filename_reference_image) as ref_img:
             self.reference_image = ref_img.read()
-        if self.transform is not None:
-            self.reference_image = self.transform.transform(self.reference_image)
 
     def _load_mask(self, filename_mask: pathlib.Path) -> None:
         with rasterio.open(filename_mask) as msk:
@@ -106,8 +104,13 @@ class ReferencePixels:
             pixel_mask = np.where((self.mask[0, :, :] > 127), 255, 0)
         else:
             raise TypeError(f"Expected a Black and White or RGB(A) image for mask but got {self.mask.shape[0]} Bands")
-        self.values = self.reference_image[:, pixel_mask == 255]
-        self.values = self.values[self.bands_to_use, :]
+        self.values_raw = self.reference_image[:, pixel_mask == 255]
+        if self.transform is not None:
+            transformed_image = self.transform.transform(self.reference_image)
+        else:
+            transformed_image = self.reference_image
+        self.values_transformed = transformed_image[:, pixel_mask == 255]
+        self.values = self.values_transformed[self.bands_to_use, :]
 
     def _show_statistics_of_pixel_mask(self) -> None:
         print(f"Number of annotated pixels: { self.values.shape }")
@@ -122,20 +125,20 @@ class ReferencePixels:
         diff = np.abs(array - array.astype(int))
         return bool(np.all(diff < 1e-10))
 
-    def save_pixel_values_to_file(self, filename: pathlib.Path) -> None:
+    def save_pixel_values_to_file(self, filename: pathlib.Path, values: NDArray[Any]) -> None:
         """Save pixel values to csv file with tab delimiter."""
         output_directory = os.path.dirname(filename)
         if not os.path.isdir(output_directory):
             os.makedirs(output_directory)
-        if self._is_int(self.values):
+        if self._is_int(values):
             fmt = "%i"
         else:
             fmt = "%f"
-        csv_header = "".join([f"c{x}\t" for x in range(1, self.values.shape[0] + 1)])[:-1]
+        csv_header = "".join([f"c{x}\t" for x in range(1, values.shape[0] + 1)])[:-1]
         print(f'Writing pixel values to the file "{ filename }"')
         np.savetxt(
             filename,
-            self.values.transpose(),
+            values.transpose(),
             delimiter="\t",
             fmt=fmt,
             header=csv_header,
@@ -166,9 +169,14 @@ class BaseDistance(ABC):
         self._calculate_statistics()
         self.show_statistics()
 
-    def save_pixel_values(self, filename: pathlib.Path) -> None:
-        """Save reference pixels to a csv file."""
-        self.reference_pixels.save_pixel_values_to_file(filename)
+    def save_pixel_values(self, output_location: pathlib.Path) -> None:
+        """Save raw, transformed and selected bands reference pixels to csv files."""
+        raw = output_location.joinpath("pixel_values/raw.csv")
+        transformed = output_location.joinpath("pixel_values/transformed.csv")
+        selected = output_location.joinpath("pixel_values/selected.csv")
+        self.reference_pixels.save_pixel_values_to_file(raw, self.reference_pixels.values_raw)
+        self.reference_pixels.save_pixel_values_to_file(transformed, self.reference_pixels.values_transformed)
+        self.reference_pixels.save_pixel_values_to_file(selected, self.reference_pixels.values)
 
     @abstractmethod
     def _calculate_statistics(self) -> None:

@@ -24,7 +24,6 @@ class TestArgsParser(unittest.TestCase):
         assert parser.alpha_channel == -1
         assert parser.scale == 5
         assert parser.output_location == pathlib.Path("output")
-        assert parser.mask_file_name == pathlib.Path("pixel_values")
         assert parser.method == "mahalanobis"
         assert parser.param == 2
         assert parser.tile_size == 3000
@@ -55,8 +54,6 @@ class TestArgsParser(unittest.TestCase):
                 "2",
                 "--output_location",
                 "/test/home/output",
-                "--mask_file_name",
-                "/test/home/mask_pixels",
                 "--method",
                 "gmm",
                 "--param",
@@ -79,7 +76,6 @@ class TestArgsParser(unittest.TestCase):
         assert parser.alpha_channel == 4
         assert parser.scale == 2
         assert parser.output_location == pathlib.Path("/test/home/output")
-        assert parser.mask_file_name == pathlib.Path("/test/home/mask_pixels")
         assert parser.method == "gmm"
         assert parser.param == 5
         assert parser.tile_size == 1000
@@ -130,12 +126,12 @@ class TestArgParserColorModels(unittest.TestCase):
         )
         with self.monkeypatch.context() as mp:
             mp.setattr(ReferencePixels, "__init__", mock_reference_pixels_init)
-            color_model = _process_color_model_args(args, vars(args), save_pixels_values=False)
+            color_model = _process_color_model_args(args, vars(args))
             assert isinstance(color_model, MahalanobisDistance)
             args = _parse_args(
                 ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "gmm"]
             )
-            color_model = _process_color_model_args(args, vars(args), save_pixels_values=False)
+            color_model = _process_color_model_args(args, vars(args))
             assert isinstance(color_model, GaussianMixtureModelDistance)
             with pytest.raises(SystemExit):
                 args = _parse_args(

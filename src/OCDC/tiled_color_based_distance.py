@@ -113,7 +113,7 @@ class TiledColorBasedDistance:
             os.makedirs(output_directory)
         plt.savefig(histogram_filename, dpi=300)
         plt.close()
-        with open(statistics_path.joinpath("output_file.txt"), "w") as f:
+        with open(statistics_path.joinpath("statistics.txt"), "w") as f:
             f.write("Input parameters:\n")
             f.write(f" - Orthomosaic: {args.orthomosaic}\n")
             f.write(f" - Reference image: {args.reference}\n")
@@ -123,7 +123,6 @@ class TiledColorBasedDistance:
             f.write(f" - Output tile location: {args.output_location}\n")
             f.write(f" - Method: {args.method}\n")
             f.write(f" - Parameter: {args.param}\n")
-            f.write(f" - Pixel mask file: {args.mask_file_name}\n")
             f.write(f" - Date and time of execution: {datetime.now().replace(microsecond=0)}\n")
             f.write("\n\nOutput from run\n")
             f.write(" - Average color value of annotated pixels\n")

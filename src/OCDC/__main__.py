@@ -7,6 +7,7 @@ See ``OCDC --help`` for a list of arguments.
 from __future__ import annotations
 
 import argparse
+import os
 import pathlib
 from datetime import datetime
 from typing import Any
@@ -65,12 +66,6 @@ def _get_parser() -> argparse.ArgumentParser:
         help="If set tiles are saved at output_location/tiles. Useful for debugging or parameter tweaking. Default no tiles are saved.",
     )
     parser.add_argument(
-        "--mask_file_name",
-        default="pixel_values",
-        type=pathlib.Path,
-        help="Change the name in which the pixel mask is saved. It defaults to pixel_values (.csv is automatically added)",
-    )
-    parser.add_argument(
         "--method",
         default="mahalanobis",
         type=str,
@@ -117,12 +112,34 @@ def _get_parser() -> argparse.ArgumentParser:
         metavar="LAMBDA",
         help="Apply a Lambda transform with the given Lambda expression to all inputs. Numpy is available as np. Default no transform.",
     )
+    parser.add_argument(
+        "--save_ref_pixels",
+        action="store_true",
+        help="Save the raw, transformed and selected reference pixels in output_location/pixel_values. Default do not save.",
+    )
+    parser.add_argument(
+        "--save_statistics",
+        action="store_true",
+        help="Save statistics of the processed orthomosaic including a histogram of color distances. Files are saved in output_location/statistics. Default do not save.",
+    )
+    parser.add_argument(
+        "--ref_pixels_from_csv",
+        type=pathlib.Path,
+        default=None,
+        metavar="CSV",
+        help="Load reference pixel from csv file instead of from reference and annotated image.",
+    )
     return parser
 
 
 def _parse_args(args: Any = None) -> Any:
     parser = _get_parser()
     return parser.parse_args(args)
+
+
+def _create_output_location(output_directory: pathlib.Path) -> None:
+    if not os.path.isdir(output_directory):
+        os.makedirs(output_directory)
 
 
 def _process_transform_args(args: Any) -> dict[str, BaseTransform | None]:
@@ -134,16 +151,15 @@ def _process_transform_args(args: Any) -> dict[str, BaseTransform | None]:
     return {"transform": transform}
 
 
-def _process_color_model_args(args: Any, keyword_args: dict[str, Any], save_pixels_values: bool = True) -> BaseDistance:
+def _process_color_model_args(args: Any, keyword_args: dict[str, Any]) -> BaseDistance:
     if args.method == "mahalanobis":
         color_model: BaseDistance = MahalanobisDistance(**keyword_args)
     elif args.method == "gmm":
         color_model = GaussianMixtureModelDistance(n_components=args.param, **keyword_args)
     else:
         raise ValueError(f"Method must be one of 'mahalanobis' or 'gmm', but got {args.method}")
-    if save_pixels_values:
-        pixels_filename = args.output_location.joinpath(f"{args.mask_file_name}.csv")
-        color_model.save_pixel_values(pixels_filename)
+    if args.save_ref_pixels:
+        color_model.save_pixel_values(args.output_location)
     return color_model
 
 
@@ -152,10 +168,12 @@ def _main() -> None:
     print(args)
     keyword_args = vars(args)
     keyword_args.update(_process_transform_args(args))
+    _create_output_location(args.output_location)
     color_model = _process_color_model_args(args, keyword_args)
     tcbs = TiledColorBasedDistance(color_model=color_model, **keyword_args)
     tcbs.process_tiles(save_tiles=args.save_tiles, save_ortho=args.do_not_save_orthomosaic)
-    tcbs.save_statistics(args)
+    if args.save_statistics:
+        tcbs.save_statistics(args)
 
 
 if __name__ == "__main__":

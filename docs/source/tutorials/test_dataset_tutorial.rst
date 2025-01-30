@@ -46,7 +46,8 @@ To create a color model from the **crop_from_orthomosaic.tif** and the **crop_fr
 
     OCDC 20190920_pumpkins_field_101_and_109-cropped.tif \
         crop_from_orthomosaic.tif \
-        crop_from_orthomosaic_annotated.tif
+        crop_from_orthomosaic_annotated.tif \
+        --save_ref_pixels
 
 This will take a little time but a progress bar will be shown.
 
@@ -56,7 +57,7 @@ The output is new georeferenced orthomosaic with the calculated color distances 
 
 .. figure:: ../_static/pumpkins_example/crop_from_orthomosaic.png
 
-In addition to generating the processed orthomosaic, the *OCDC* also have exported a file **pixel_values.csv** that contains all the color values of the annotated pixels. This can be used to gain a better understanding of the segmentation process. Each row corresponds to the color value of one pixel.
+In addition to generating the processed orthomosaic, the *OCDC* also have exported a file **pixel_values/selected.csv** that contains all the color values of the annotated pixels. This can be used to gain a better understanding of the segmentation process. Each row corresponds to the color value of one pixel.
 
 === === ===
 r   g   b
