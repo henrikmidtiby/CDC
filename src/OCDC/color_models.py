@@ -117,7 +117,8 @@ class ReferencePixels:
                 f"Not enough annotated pixels. Need at least {min_annotated_pixels}, but got {self.values.shape[1]}"
             )
 
-    def _is_int(self, array: NDArray[Any]) -> bool:
+    @staticmethod
+    def _is_int(array: NDArray[Any]) -> bool:
         diff = np.abs(array - array.astype(int))
         return bool(np.all(diff < 1e-10))
 
@@ -130,7 +131,7 @@ class ReferencePixels:
             fmt = "%i"
         else:
             fmt = "%f"
-        csv_header = "".join([f"c{x}\t" for x in range(self.values.shape[0])])[:-1]
+        csv_header = "".join([f"c{x}\t" for x in range(1, self.values.shape[0] + 1)])[:-1]
         print(f'Writing pixel values to the file "{ filename }"')
         np.savetxt(
             filename,
