@@ -32,31 +32,19 @@ OCDC is a open-source python package for calculating color distances in images. 
 
 # Statement of need
 
-- precision agriculture
-- improved segmentation
-- multispectral
-- able to handle large orthomosaic by tiling.
+In Precision Agriculture the most common application is to assess the vegetation health by using Remote Sensing techniques and image analytics. The most applied Remote Sensing techniques is arial monitoring where images from satellites, manned aircraft and Unmanned Aerial Vehicles (UAVs) are captured [@matese2015]. The use of UAVs also known as drones have seen a large increase in resent years as it is a more economical solution and are capable of providing high-quality images then satellites and manned aircraft [@pareview2020].
 
-A Statement of need section that clearly illustrates the research purpose of the software and places it in the context of related work.
+UAVs can carry various kinds of cameras such as multispectral and hyperspectral along with normal RGB cameras, thereby acquiring aerial images that can be used to extract vegetation indices. Vegetation indices such as Normalized Difference Vegetation Index (NDVI) can be interpreted by farmers to monitor the crops variability and stress[@xue2017]. Individual images from the UAV normally only covers a small part of the field, but to get a overview of the whole field the images are stitch together in software like OpenDroneMap and Pix4D together with Geographical Information Systems (GIS) information creating a large georeferenced orthomosaic.
 
-A list of key references, including to other software addressing related needs. Note that the references should include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
+More advanced Precision Agriculture applications like yield estimation [@midtiby2022] and crop row detection requires segmentation in order to be able to tell what is crop and what is background. This can be done with deep neural networks [@PANG2020], but comes with the cost of needing training images and are often crop specific, so entry cost in applying deep neural networks can often be high.
 
-Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.
+We purpose OCDC for segmenting large multispectral orthomosaics by calculating the color distance to a set of reference pixels. The Output of OCDC is a grayscale orthomosaic which can easily be threshold to achieve a black and white segmentation.
+
+OCDC is developed with Agriculture uses in mind, but can easily be applied to other domains as is or by utilizing the library for custom needs.
+
 
 # Acknowledgements
 
 the OCDC tool was developed by SDU UAS Center as part of the project Præcisionsfrøavl, that was supported by the [Green Development and Demonstration Programme (GUDP)](https://gudp.lbst.dk/) and [Frøafgiftsfonden](https://froeafgiftsfonden.dk/) both from Denmark.
 
 # References
-
-Notes: (to be deleted)
-
-The paper should be between 250-1000 words
-
-review_checklist:
-
-- Summary: Has a clear description of the high-level functionality and purpose of the software for a diverse, non-specialist audience been provided?
-- A statement of need: Does the paper have a section titled ‘Statement of need’ that clearly states what problems the software is designed to solve, who the target audience is, and its relation to other work?
-- State of the field: Do the authors describe how this software compares to other commonly-used packages?
-- Quality of writing: Is the paper well written (i.e., it does not require editing for structure, language, or writing quality)?
-- References: Is the list of references complete, and is everything cited appropriately that should be cited (e.g., papers, datasets, software)? Do references in the text use the proper citation syntax?
