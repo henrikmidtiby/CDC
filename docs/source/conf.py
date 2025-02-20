@@ -43,6 +43,7 @@ autosummary_generate = True
 autodoc_typehints = "description"
 autodoc_type_aliases = {"NDArray": "NDArray"}
 autoclass_content = "both"
+autodoc_member_order = "groupwise"
 
 add_module_names = False
 
