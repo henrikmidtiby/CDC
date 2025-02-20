@@ -18,6 +18,7 @@ from OCDC.transforms import BaseTransform
 class ReferencePixels:
     """
     A Class for handling the reference pixels for color models.
+    Extracted from a reference image and an annotated mask.
 
     Parameters
     ----------
@@ -25,18 +26,94 @@ class ReferencePixels:
         Reference image from which the pixels are extracted.
     annotated
         Image with annotated pixels locations for extraction.
+    """
+
+    def __init__(self, *, reference: pathlib.Path, annotated: pathlib.Path):
+        self.values: NDArray[Any] = np.zeros(0)
+        """The reference pixel values."""
+        ref_image = self.load_image(reference)
+        mask_image = self.load_image(annotated)
+        self.generate_pixel_values(ref_image, mask_image)
+
+    @staticmethod
+    def load_image(file_name: pathlib.Path) -> NDArray:
+        """Load image from file."""
+        with rasterio.open(file_name) as img:
+            return img.read()
+
+    def generate_pixel_values(
+        self,
+        ref_image: NDArray[Any],
+        mask_image: NDArray[Any],
+        lower_range: tuple[int, int, int] = (245, 0, 0),
+        higher_range: tuple[int, int, int] = (256, 10, 10),
+    ) -> None:
+        """
+        Generate Pixel values from reference and mask image.
+        Lower_range and higher_range is only used if mask is annotated with a color
+        to extract the pixel with a given color. Default red.
+        """
+        if mask_image.shape[0] == 3 or mask_image.shape[0] == 4:
+            pixel_mask = np.where(
+                (mask_image[0, :, :] >= lower_range[0])
+                & (mask_image[0, :, :] <= higher_range[0])
+                & (mask_image[1, :, :] >= lower_range[1])
+                & (mask_image[1, :, :] <= higher_range[1])
+                & (mask_image[2, :, :] >= lower_range[2])
+                & (mask_image[2, :, :] <= higher_range[2]),
+                255,
+                0,
+            )
+        elif mask_image.shape[0] == 1:
+            pixel_mask = np.where((mask_image[0, :, :] > 127), 255, 0)
+        else:
+            raise TypeError(f"Expected a Black and White or RGB(A) image for mask but got {mask_image.shape[0]} Bands")
+        self.values = ref_image[:, pixel_mask == 255]
+        min_annotated_pixels = 100
+        if self.values.shape[1] <= min_annotated_pixels:
+            raise Exception(
+                f"Not enough annotated pixels. Need at least {min_annotated_pixels}, but got {self.values.shape[1]}"
+            )
+
+
+class BaseDistance(ABC):
+    """
+    Base class for all color distance models.
+
+    Parameters
+    ----------
+    reference_pixels
+        Pixels to use as a reference
     bands_to_use
-        Which bands to extract pixel values from.
-    alpha_channel
-        Which channel is the alpha channel.
+        A list of indexes to choose which "colors" are used in distance calculations
     transform
-        A transform to apply on the extracted pixels.
-    **kwargs
-        Not used.
+        A transform to apply to the images before the distance is calculated.
     """
 
     def __init__(
         self,
+        *,
+        reference_pixels: NDArray[Any],
+        bands_to_use: tuple[int, ...] | list[int] | None = None,
+        transform: BaseTransform | None = None,
+    ):
+        self.color_values: NDArray[Any] = reference_pixels
+        """Reference pixel values"""
+        self.bands_to_use: tuple[int, ...] | list[int] | None = bands_to_use
+        self.transform: BaseTransform | None = transform
+        self.color_values_raw: NDArray[Any] | None = None
+        """Raw pixel values as reference"""
+        self.color_values_transformed: NDArray[Any] | None = None
+        """Transformed reference pixel values"""
+        self.covariance: NDArray[Any] | None = None
+        """Covariance of the reference pixels."""
+        self.average: float | None = None
+        """Average of the reference pixels."""
+        self.calculate_statistics()
+
+    @classmethod
+    def from_image_annotation(
+        cls,
         *,
         reference: pathlib.Path,
         annotated: pathlib.Path,
@@ -44,81 +121,57 @@ class ReferencePixels:
         alpha_channel: int | None = -1,
         transform: BaseTransform | None = None,
         **kwargs: Any,
-    ):
-        self.reference_image_filename = reference
-        self.mask_filename = annotated
-        self.bands_to_use: tuple[int, ...] | list[int] | None = bands_to_use
-        self.alpha_channel: int | None = alpha_channel
-        self.transform: BaseTransform | None = transform
-        self.reference_image: NDArray[Any] = np.zeros(0)
-        self.mask: NDArray[Any] = np.zeros(0)
-        self.values: NDArray[Any] = np.zeros(0)
-        """The reference pixel values."""
-        self._initialize()
+    ) -> BaseDistance:
+        """Create a class instance from a reference image and an annotated mask."""
+        ref_pix = ReferencePixels(reference=reference, annotated=annotated)
+        cls_instance = cls(reference_pixels=ref_pix.values, bands_to_use=bands_to_use, transform=transform, **kwargs)
+        cls_instance.get_bands_to_use(alpha_channel, ref_pix.values.shape[0])
+        cls_instance.color_values_raw = ref_pix.values
+        if cls_instance.transform is not None:
+            cls_instance.color_values_transformed = cls_instance.transform.transform(ref_pix.values)
+        else:
+            cls_instance.color_values_transformed = ref_pix.values
+        cls_instance.color_values = cls_instance.color_values_transformed[cls_instance.bands_to_use, :]
+        cls_instance.calculate_statistics()
+        return cls_instance
 
-    def _initialize(self) -> None:
-        self._load_reference_image(self.reference_image_filename)
-        self._load_mask(self.mask_filename)
-        self._get_bands_to_use()
-        self._generate_pixel_mask()
-        self._show_statistics_of_pixel_mask()
+    @classmethod
+    def from_pixel_values(
+        cls,
+        *,
+        pixel_values: NDArray,
+        bands_to_use: tuple[int, ...] | list[int] | None = None,
+        alpha_channel: int | None = -1,
+        transform: BaseTransform | None = None,
+        **kwargs: Any,
+    ) -> BaseDistance:
+        """Create a class instance from a list of pixel values before bands_to_use and transforms are applied."""
+        cls_instance = cls(reference_pixels=pixel_values, bands_to_use=bands_to_use, transform=transform, **kwargs)
+        cls_instance.get_bands_to_use(alpha_channel, pixel_values.shape[0])
+        cls_instance.color_values_raw = pixel_values
+        if cls_instance.transform is not None:
+            cls_instance.color_values_transformed = cls_instance.transform.transform(pixel_values)
+        else:
+            cls_instance.color_values_transformed = pixel_values
+        cls_instance.color_values = cls_instance.color_values_transformed[cls_instance.bands_to_use, :]
+        cls_instance.calculate_statistics()
+        return cls_instance
 
-    def _get_bands_to_use(self) -> None:
+    def get_bands_to_use(self, alpha_channel: int | None, number_of_bands: int) -> None:
+        """Get correct bands to use from supplied alpha channel number and the number of bands in input."""
         if self.bands_to_use is None:
-            self.bands_to_use = tuple(range(self.reference_image.shape[0]))
-            if self.alpha_channel is not None:
-                if self.alpha_channel < -1 or self.alpha_channel > self.reference_image.shape[0] - 1:
+            self.bands_to_use = tuple(range(number_of_bands))
+            if alpha_channel is not None:
+                if alpha_channel < -1 or alpha_channel > number_of_bands - 1:
                     raise ValueError(
-                        f"Alpha channel have to be between -1 and {self.reference_image.shape[0]-1}, but got {self.alpha_channel}."
+                        f"Alpha channel have to be between -1 and {number_of_bands-1}, but got {alpha_channel}."
                     )
-                elif self.alpha_channel == -1:
-                    self.alpha_channel = self.reference_image.shape[0] - 1
-                self.bands_to_use = tuple(x for x in self.bands_to_use if x != self.alpha_channel)
+                elif alpha_channel == -1:
+                    alpha_channel = number_of_bands - 1
+                self.bands_to_use = tuple(x for x in self.bands_to_use if x != alpha_channel)
         for band in self.bands_to_use:
-            if band < 0 or band > self.reference_image.shape[0] - 1:
-                raise ValueError(f"Bands have to be between 0 and {self.reference_image.shape[0]-1}, but got {band}.")
-
-    def _load_reference_image(self, filename_reference_image: pathlib.Path) -> None:
-        with rasterio.open(filename_reference_image) as ref_img:
-            self.reference_image = ref_img.read()
-
-    def _load_mask(self, filename_mask: pathlib.Path) -> None:
-        with rasterio.open(filename_mask) as msk:
-            self.mask = msk.read()
-
-    def _generate_pixel_mask(
-        self, lower_range: tuple[int, int, int] = (245, 0, 0), higher_range: tuple[int, int, int] = (256, 10, 10)
-    ) -> None:
-        if self.mask.shape[0] == 3 or self.mask.shape[0] == 4:
-            pixel_mask = np.where(
-                (self.mask[0, :, :] >= lower_range[0])
-                & (self.mask[0, :, :] <= higher_range[0])
-                & (self.mask[1, :, :] >= lower_range[1])
-                & (self.mask[1, :, :] <= higher_range[1])
-                & (self.mask[2, :, :] >= lower_range[2])
-                & (self.mask[2, :, :] <= higher_range[2]),
-                255,
-                0,
-            )
-        elif self.mask.shape[0] == 1:
-            pixel_mask = np.where((self.mask[0, :, :] > 127), 255, 0)
-        else:
-            raise TypeError(f"Expected a Black and White or RGB(A) image for mask but got {self.mask.shape[0]} Bands")
-        self.values_raw = self.reference_image[:, pixel_mask == 255]
-        if self.transform is not None:
-            transformed_image = self.transform.transform(self.reference_image)
-        else:
-            transformed_image = self.reference_image
-        self.values_transformed = transformed_image[:, pixel_mask == 255]
-        self.values = self.values_transformed[self.bands_to_use, :]
-
-    def _show_statistics_of_pixel_mask(self) -> None:
-        print(f"Number of annotated pixels: { self.values.shape }")
-        min_annotated_pixels = 100
-        if self.values.shape[1] <= min_annotated_pixels:
-            raise Exception(
-                f"Not enough annotated pixels. Need at least {min_annotated_pixels}, but got {self.values.shape[1]}"
-            )
+            if band < 0 or band > number_of_bands - 1:
+                raise ValueError(f"Bands have to be between 0 and {number_of_bands-1}, but got {band}.")
 
     @staticmethod
     def _is_int(array: NDArray[Any]) -> bool:
@@ -153,54 +206,30 @@ class ReferencePixels:
             comments="",
         )
 
-
-class BaseDistance(ABC):
-    """
-    Base class for all color distance models.
-
-    Parameters
-    ----------
-    **kwargs
-        Not used.
-    """
-
-    def __init__(self, **kwargs: Any):
-        self.reference_pixels = ReferencePixels(**kwargs)
-        self.bands_to_use = self.reference_pixels.bands_to_use
-        self.covariance: NDArray[Any]
-        """Covariance of the reference pixels."""
-        self.average: float
-        """Average of the reference pixels."""
-        self._initialize()
-
-    def _initialize(self) -> None:
-        self._calculate_statistics()
-        self.show_statistics()
-
     def save_pixel_values(
         self, output_location: pathlib.Path, channel_names_in: str | None = None, channel_names_out: str | None = None
     ) -> None:
         """Save raw, transformed and selected bands reference pixels to csv files."""
-        raw = output_location.joinpath("pixel_values/raw.csv")
-        transformed = output_location.joinpath("pixel_values/transformed.csv")
+        if self.color_values_raw is not None:
+            raw = output_location.joinpath("pixel_values/raw.csv")
+            self.save_pixel_values_to_file(raw, self.color_values_raw, channel_names_in)
+        if self.color_values_transformed is not None:
+            transformed = output_location.joinpath("pixel_values/transformed.csv")
+            self.save_pixel_values_to_file(transformed, self.color_values_transformed, channel_names_out)
         selected = output_location.joinpath("pixel_values/selected.csv")
-        self.reference_pixels.save_pixel_values_to_file(raw, self.reference_pixels.values_raw, channel_names_in)
-        self.reference_pixels.save_pixel_values_to_file(
-            transformed, self.reference_pixels.values_transformed, channel_names_out
-        )
-        self.reference_pixels.save_pixel_values_to_file(
-            selected, self.reference_pixels.values, channel_names_out, raw=False
-        )
+        self.save_pixel_values_to_file(selected, self.color_values, channel_names_out, raw=False)
 
     @abstractmethod
-    def _calculate_statistics(self) -> None:
+    def calculate_statistics(self) -> None:
+        """Calculate the necessary statistics for performing the distance calculation, i.e. the covariance and average."""
         pass
 
     @abstractmethod
     def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
         """Calculate the color distance for each pixel in the image to the reference."""
-        if self.reference_pixels.transform is not None:
-            image = self.reference_pixels.transform.transform(image)
+        if self.transform is not None:
+            image = self.transform.transform(image)
+        image = image[self.bands_to_use, :, :]
         return image
 
     @abstractmethod
@@ -213,19 +242,11 @@ class MahalanobisDistance(BaseDistance):
     """
     A multivariate normal distribution used to describe the color of a set of
     pixels.
-
-    Parameters
-    ----------
-    **kwargs
-        Not used.
     """
 
-    def __init__(self, **kwargs: Any):
-        super().__init__(**kwargs)
-
-    def _calculate_statistics(self) -> None:
-        self.covariance: NDArray[Any] = np.cov(self.reference_pixels.values)
-        self.average = np.average(self.reference_pixels.values, axis=1)
+    def calculate_statistics(self) -> None:
+        self.covariance: NDArray[Any] = np.cov(self.color_values)
+        self.average = np.average(self.color_values, axis=1)
 
     def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
         """
@@ -233,8 +254,7 @@ class MahalanobisDistance(BaseDistance):
         for each pixel in the image to the reference.
         """
         image = super().calculate_distance(image)
-        assert self.bands_to_use is not None
-        pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
+        pixels = np.reshape(image, (image.shape[0], -1)).transpose()
         inv_cov = np.linalg.inv(self.covariance)
         diff = pixels - self.average
         modified_dot_product = diff * (diff @ inv_cov)
@@ -259,20 +279,67 @@ class GaussianMixtureModelDistance(BaseDistance):
     ----------
     n_components
         The number of mixture components.
-    **kwargs
-        Not used.
     """
 
-    def __init__(self, n_components: int, **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        n_components: int,
+        reference_pixels: NDArray,
+        bands_to_use: tuple[int, ...] | list[int] | None = None,
+        transform: BaseTransform | None = None,
+    ):
         self.n_components = n_components
-        super().__init__(**kwargs)
+        super().__init__(reference_pixels=reference_pixels, bands_to_use=bands_to_use, transform=transform)
 
-    def _calculate_statistics(self) -> None:
+    @classmethod
+    def from_image_annotation(  # type: ignore[override]
+        cls,
+        *,
+        n_components: int,
+        reference: pathlib.Path,
+        annotated: pathlib.Path,
+        bands_to_use: tuple[int, ...] | list[int] | None = None,
+        alpha_channel: int | None = -1,
+        transform: BaseTransform | None = None,
+        **kwargs: Any,
+    ) -> GaussianMixtureModelDistance:
+        return super().from_image_annotation(  # type: ignore[return-value]
+            reference=reference,
+            annotated=annotated,
+            bands_to_use=bands_to_use,
+            alpha_channel=alpha_channel,
+            transform=transform,
+            n_components=n_components,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_pixel_values(  # type: ignore[override]
+        cls,
+        *,
+        n_components: int,
+        pixel_values: NDArray,
+        bands_to_use: tuple[int, ...] | list[int] | None = None,
+        alpha_channel: int | None = -1,
+        transform: BaseTransform | None = None,
+        **kwargs: Any,
+    ) -> GaussianMixtureModelDistance:
+        return super().from_pixel_values(  # type: ignore[return-value]
+            pixel_values=pixel_values,
+            bands_to_use=bands_to_use,
+            alpha_channel=alpha_channel,
+            transform=transform,
+            n_components=n_components,
+            **kwargs,
+        )
+
+    def calculate_statistics(self) -> None:
         self.gmm = mixture.GaussianMixture(n_components=self.n_components, covariance_type="full")
-        self.gmm.fit(self.reference_pixels.values.transpose())
+        self.gmm.fit(self.color_values.transpose())
         self.average = self.gmm.means_
         self.covariance = self.gmm.covariances_
-        self.min_score = np.min(self.gmm.score_samples(self.reference_pixels.values.transpose()))
+        self.min_score = np.min(self.gmm.score_samples(self.color_values.transpose()))
 
     def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
         """
@@ -280,8 +347,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         for each pixel in the image to the reference.
         """
         image = super().calculate_distance(image)
-        assert self.bands_to_use is not None
-        pixels = np.reshape(image[self.bands_to_use, :, :], (len(self.bands_to_use), -1)).transpose()
+        pixels = np.reshape(image, (image.shape[0], -1)).transpose()
         loglikelihood = self.gmm.score_samples(pixels)
         distance = np.sqrt(np.maximum(-(loglikelihood - self.min_score), 0))
         distance_image = np.reshape(distance, (1, image.shape[1], image.shape[2]))

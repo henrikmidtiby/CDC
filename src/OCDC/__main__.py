@@ -170,10 +170,17 @@ def _process_transform_args(args: Any) -> dict[str, BaseTransform | None]:
 
 
 def _process_color_model_args(args: Any, keyword_args: dict[str, Any]) -> BaseDistance:
+    color_args = {
+        "reference": keyword_args["reference"],
+        "annotated": keyword_args["annotated"],
+        "bands_to_use": keyword_args["bands_to_use"],
+        "alpha_channel": keyword_args["alpha_channel"],
+        "transform": keyword_args["transform"],
+    }
     if args.method == "mahalanobis":
-        color_model: BaseDistance = MahalanobisDistance(**keyword_args)
+        color_model: BaseDistance = MahalanobisDistance.from_image_annotation(**color_args)
     elif args.method == "gmm":
-        color_model = GaussianMixtureModelDistance(n_components=args.param, **keyword_args)
+        color_model = GaussianMixtureModelDistance.from_image_annotation(n_components=args.param, **color_args)
     else:
         raise ValueError(f"Method must be one of 'mahalanobis' or 'gmm', but got {args.method}")
     if args.save_ref_pixels:

@@ -114,24 +114,22 @@ class TestArgParserColorModels(unittest.TestCase):
         self.monkeypatch = pytest.MonkeyPatch()
 
     def test_color_model_args(self) -> None:
-        def mock_reference_pixels_init(
-            self: Any, bands_to_use: list[int], *args: Any, **kwargs: dict[str, Any]
-        ) -> None:
-            self.bands_to_use = bands_to_use
+        def mock_reference_pixels_init(self: Any, *args: Any, **kwargs: dict[str, Any]) -> None:
             self.values = test_reference_pixels_values
-            self.transform = None
 
         args = _parse_args(
             ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "mahalanobis"]
         )
+        keyword_args = vars(args)
+        keyword_args.update(_process_transform_args(args))
         with self.monkeypatch.context() as mp:
             mp.setattr(ReferencePixels, "__init__", mock_reference_pixels_init)
-            color_model = _process_color_model_args(args, vars(args))
+            color_model = _process_color_model_args(args, keyword_args)
             assert isinstance(color_model, MahalanobisDistance)
             args = _parse_args(
                 ["/test/home/ortho.tiff", "/test/home/ref.tiff", "/test/home/anno.png", "--method", "gmm"]
             )
-            color_model = _process_color_model_args(args, vars(args))
+            color_model = _process_color_model_args(args, keyword_args)
             assert isinstance(color_model, GaussianMixtureModelDistance)
             with pytest.raises(SystemExit):
                 args = _parse_args(
@@ -142,4 +140,4 @@ class TestArgParserColorModels(unittest.TestCase):
             )
             args.method = "test_wrong"
             with pytest.raises(ValueError, match=r"Method must be one of 'mahalanobis' or 'gmm', but got (.*)"):
-                color_model = _process_color_model_args(args, vars(args))
+                color_model = _process_color_model_args(args, keyword_args)
