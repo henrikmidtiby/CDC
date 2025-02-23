@@ -28,9 +28,9 @@ bibliography: paper.bib
 
 # Summary
 
-Orthomosaic Color Distance Calculator, abbreviated OCDC is an open-source python
-package for calculating color distances from all pixels in an image to a reference
-color.
+The Orthomosaic Color Distance Calculator, abbreviated OCDC is an open-source python
+package for calculating a color distance image, a gray scale image with color distances
+from all pixels in the input image to a reference color.
 It is specifically made for handling large orthomosaics and multispectral data.
 By providing OCDC with reference pixels it calculates the distance using
 Mahalanobis distance or a Gaussian Mixture Model for all pixels in the orthomosaic.
@@ -41,14 +41,37 @@ The python package also allow for using OCDC as a library for more complex tasks
 
 # Statement of need
 
-In Precision Agriculture the most common application is to assess the vegetation
+A common task in Precision Agriculture is to segment an orthomosaic into
+different regions based on information in the orthomosaic.
+The regions can e.g. represent areas with healthy vegetation or areas with
+a certain type of unvanted vegetation.
+The classic approach is to use the excess green (ExG) color index to assess
+wether the current pixel is green enough to be considered healthy vegetation.
+Such an approach based on a hardcoded rule (ExG and a threshold) is only
+suitable for a limited number of cases.
+
+Given enough training data, it is possible to train convolutional neural
+networks (CNN's) for segmenting arbitraty objects in images
+[@Ronneberger2015Unet].
+
+A more flexible approach is to use a small set of pixels to determine a reference
+color and then calculate the distance for all pixels in the input image
+to that reference color.
+We have used this approach successfully on a several cases, including the following
+
+- detect healthy crop plants in a grass seed field
+- locating thistles in a grass seed field
+- counting pumpkins in a pumpkin field
+
+
+In Precision Agriculture a common application is to assess the vegetation
 health by using Remote Sensing techniques and image analytics.
 The most applied Remote Sensing techniques is arial monitoring where images
 from satellites, manned aircraft and Unmanned Aerial Vehicles (UAVs) are
 captured [@matese2015].
-The use of UAVs also known as drones have seen a large increase in resent
-years as it is a more economical solution and are capable of providing
-high-quality images then satellites and manned aircraft [@pareview2020].
+The use of UAVs also known as drones have seen a large increase in recent
+years as it is able to provide high-quality images in with a more affordable cost
+than satellites and manned aircraft [@pareview2020].
 
 UAVs can carry various kinds of cameras such as multispectral and hyperspectral
 along with normal RGB cameras, thereby acquiring aerial images that can be
