@@ -28,79 +28,82 @@ bibliography: paper.bib
 
 # Summary
 
-The Orthomosaic Color Distance Calculator, abbreviated OCDC is an open-source python
-package for calculating a color distance image, a gray scale image with color distances
-from all pixels in the input image to a reference color.
-It is specifically made for handling large orthomosaics and multispectral data.
-By providing OCDC with reference pixels it calculates the distance using
-Mahalanobis distance or a Gaussian Mixture Model for all pixels in the orthomosaic.
-OCDCs main function are exposed as a command line interface where providing an
-orthomosaic, reference image and a mask will output a new orthomosaic with the
-color distances.
-The python package also allow for using OCDC as a library for more complex tasks.
+The Orthomosaic Color Distance Calculator (OCDC) is an open-source python
+package designed to calculate a color distance image, a gray scale image
+with color distances from all pixels in the input image to a reference color.
+It is specifically tailored for handling large orthomosaics and multispectral data.
+By providing OCDC with reference pixels, it calculates the distance using
+either the Mahalanobis distance or a Gaussian Mixture Model for all pixels
+in the orthomosaic.
+OCDC's main functions are exposed through a command-line interface, where
+providing an orthomosaic, reference image, and a mask will output a new
+orthomosaic with the color distances.
+The Python package also allows for using OCDC as a library for more complex tasks.
 
 # Statement of need
 
 A common task in Precision Agriculture is to segment an orthomosaic into
-different regions based on information in the orthomosaic.
-The regions can e.g. represent areas with healthy vegetation or areas with
-a certain type of unvanted vegetation.
+different regions based on the information in the orthomosaic.
+The regions can represent areas with healthy vegetation or areas with
+unvanted vegetation.
 The classic approach is to use the excess green (ExG) color index to assess
-wether the current pixel is green enough to be considered healthy vegetation.
-Such an approach based on a hardcoded rule (ExG and a threshold) is only
+whether the current pixel is green enough to be considered healthy vegetation.
+Such an approach based on a hardcoded, rule (ExG and a threshold) is only
 suitable for a limited number of cases.
 
 Given enough training data, it is possible to train convolutional neural
 networks (CNN's) for segmenting arbitraty objects in images
 [@Ronneberger2015Unet].
+However, obtaining enough annotated training data can be difficult.
 
 A more flexible approach is to use a small set of pixels to determine a reference
 color and then calculate the distance for all pixels in the input image
 to that reference color.
-We have used this approach successfully on a several cases, including the following
+We have successfully used this approach in several cases, including the following:
 
 - detect healthy crop plants in a grass seed field
 - locating thistles in a grass seed field
-- counting pumpkins in a pumpkin field
+- counting pumpkins in a pumpkin field [@midtiby2022]
 
-
-In Precision Agriculture a common application is to assess the vegetation
-health by using Remote Sensing techniques and image analytics.
-The most applied Remote Sensing techniques is arial monitoring where images
-from satellites, manned aircraft and Unmanned Aerial Vehicles (UAVs) are
-captured [@matese2015].
-The use of UAVs also known as drones have seen a large increase in recent
-years as it is able to provide high-quality images in with a more affordable cost
-than satellites and manned aircraft [@pareview2020].
-
-UAVs can carry various kinds of cameras such as multispectral and hyperspectral
-along with normal RGB cameras, thereby acquiring aerial images that can be
-used to extract vegetation indices.
-Vegetation indices such as Normalized Difference Vegetation Index (NDVI) can
-be interpreted by farmers to monitor the crops variability and stress[@xue2017].
-Individual images from the UAV normally only covers a small part of the field,
-but to get a overview of the whole field the images are stitch together in
-software like OpenDroneMap and Pix4D together with
-Geographical Information Systems (GIS) information creating a large
-georeferenced orthomosaic.
-
-
-TODO: Add more details from here.
-
-More advanced Precision Agriculture applications like yield estimation [@midtiby2022]
-and crop row detection requires segmentation in order to be able to tell
-what is crop and what is background.
-This can be done with deep neural networks [@PANG2020], but comes with the
-cost of needing training images and are often crop specific, so entry cost
-in applying deep neural networks can often be high.
-
-We purpose OCDC for segmenting large multispectral orthomosaics by calculating
+We propose OCDC for segmenting large multispectral orthomosaics by calculating
 the color distance to a set of reference pixels.
 The Output of OCDC is a grayscale orthomosaic which can easily be threshold to
 achieve a black and white segmentation.
 
 OCDC is developed with Agriculture uses in mind, but can easily be applied to
 other domains as is or by utilizing the library for custom needs.
+
+# Background and methods
+
+In Precision Agriculture a common application is to assess the vegetation
+health by using Remote Sensing techniques and image analytics.
+The most applied Remote Sensing techniques is arial monitoring, where images
+from satellites, manned aircraft, and Unmanned Aerial Vehicles (UAVs) are
+captured [@matese2015].
+The use of UAVs, also known as drones, has seen a large increase in recent
+years as they provide high-quality images at a more affordable cost
+than satellites and manned aircraft [@pareview2020].
+
+UAVs can carry various kinds of cameras, such as multispectral and hyperspectral,
+along with normal RGB cameras, thereby acquiring aerial images that can be
+used to extract vegetation indices.
+Vegetation indices such as the Normalized Difference Vegetation Index (NDVI) can
+be interpreted by farmers to monitor the crops variability and stress[@xue2017].
+Individual images from the UAV normally only cover a small part of the field,
+but to get a overview of the whole field, the images are stitched together in
+software like OpenDroneMap, Metashape, or Pix4D together with
+Geographical Information Systems (GIS) information, creating a large
+georeferenced orthomosaic.
+
+In OCDC the Mahalanobis distance in the RGB color space is used as the default
+color distance. The Mahalanobis distance is defined as
+
+$$
+\sqrt{\left( \vec{x} - \vec{\mu} \right)^T \cdot S^{-1} \cdot \left( \vec{x} - \vec{\mu} \right)}
+$$
+
+where $\vec{x}$ is the color value, $\vec{\mu}$ the mean color value and $S$ the covariance matrix.
+The parameters $\vec{\mu}$ and $S$ are determined from a set of training pixels.
 
 
 # Acknowledgements
