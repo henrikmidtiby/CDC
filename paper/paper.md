@@ -35,24 +35,28 @@ It is specifically tailored for handling large orthomosaics and multispectral da
 By providing OCDC with reference pixels, it calculates the distance using
 either the Mahalanobis distance or a Gaussian Mixture Model for all pixels
 in the orthomosaic.
+Figure \ref{pumpkins} shows a small section of a pumpkin field and the corresponding color distance image.
 OCDC's main functions are exposed through a command-line interface, where
 providing an orthomosaic, reference image, and a mask will output a new
 orthomosaic with the color distances.
 The Python package also allows for using OCDC as a library for more complex tasks.
+
+¡[Small section of pumpkins field (left) color distance image of pumpkins field (right) \label{fig:pumpkins}](pumkpiks_figure.png)
+
 
 # Statement of need
 
 A common task in Precision Agriculture is to segment an orthomosaic into
 different regions based on the information in the orthomosaic.
 The regions can represent areas with healthy vegetation or areas with
-unvanted vegetation.
+unwanted vegetation.
 The classic approach is to use the excess green (ExG) color index to assess
 whether the current pixel is green enough to be considered healthy vegetation.
 Such an approach based on a hardcoded, rule (ExG and a threshold) is only
 suitable for a limited number of cases.
 
 Given enough training data, it is possible to train convolutional neural
-networks (CNN's) for segmenting arbitraty objects in images
+networks (CNN's) for segmenting arbitrary objects in images
 [@Ronneberger2015Unet].
 However, obtaining enough annotated training data can be difficult.
 
