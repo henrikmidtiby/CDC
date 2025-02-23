@@ -41,7 +41,7 @@ providing an orthomosaic, reference image, and a mask will output a new
 orthomosaic with the color distances.
 The Python package also allows for using OCDC as a library for more complex tasks.
 
-¡[Small section of pumpkins field (left) color distance image of pumpkins field (right) \label{fig:pumpkins}](pumkpiks_figure.png)
+![Small section of pumpkins field (left) color distance image of pumpkins field (right) \label{fig:pumpkins}](pumkpiks_figure.png)
 
 
 # Statement of need
