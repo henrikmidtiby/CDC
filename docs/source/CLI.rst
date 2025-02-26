@@ -2,6 +2,6 @@ CLI
 ***
 
 .. argparse::
-   :module: OCDC.__main__
+   :module: CDC.__main__
    :func: _get_parser
-   :prog: OCDC
+   :prog: CDC

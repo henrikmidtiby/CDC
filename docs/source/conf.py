@@ -7,7 +7,7 @@ import os
 import sys
 from datetime import datetime
 
-import OCDC  # noqa: F401 #
+import CDC  # noqa: F401 #
 
 sys.path.insert(0, os.path.abspath("."))
 
@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath("."))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 
-project = "OCDC"
+project = "CDC"
 copyright = f"2023-{datetime.now().year}, SDU UAS Center"  # noqa: A001
 author = "SDU UAS Center"
 release = "v0.1.0"
@@ -58,4 +58,4 @@ html_theme_options = {
     "source_branch": "main",
     "source_directory": "docs/source/",
 }
-html_title = "OCDC"
+html_title = "CDC"

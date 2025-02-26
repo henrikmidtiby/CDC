@@ -1,5 +1,5 @@
 ---
-title: 'OCDC: Orthomosaic Color Distance Calculator'
+title: 'CDC: Color Distance Calculator'
 Tags:
   - Python
   - Computer Vision
@@ -28,18 +28,18 @@ bibliography: paper.bib
 
 # Summary
 
-The Orthomosaic Color Distance Calculator (OCDC) is an open-source python
+The Color Distance Calculator (CDC) is an open-source python
 package designed to calculate a color distance image, a gray scale image
 with color distances from all pixels in the input image to a reference color.
 It is specifically tailored for handling large orthomosaics and multispectral data.
-By providing OCDC with reference pixels, it calculates the distance using
+By providing CDC with reference pixels, it calculates the distance using
 either the Mahalanobis distance or a Gaussian Mixture Model for all pixels
 in the orthomosaic.
 Figure \ref{pumpkins} shows a small section of a pumpkin field and the corresponding color distance image.
-OCDC's main functions are exposed through a command-line interface, where
+CDC's main functions are exposed through a command-line interface, where
 providing an orthomosaic, reference image, and a mask will output a new
 orthomosaic with the color distances.
-The Python package also allows for using OCDC as a library for more complex tasks.
+The Python package also allows for using CDC as a library for more complex tasks.
 
 ![Small section of pumpkins field (left) color distance image of pumpkins field (right) \label{fig:pumpkins}](pumkpiks_figure.png)
 
@@ -69,12 +69,12 @@ We have successfully used this approach in several cases, including the followin
 - locating thistles in a grass seed field
 - counting pumpkins in a pumpkin field [@midtiby2022]
 
-We propose OCDC for segmenting large multispectral orthomosaics by calculating
+We propose CDC for segmenting large multispectral orthomosaics by calculating
 the color distance to a set of reference pixels.
-The Output of OCDC is a grayscale orthomosaic which can easily be threshold to
+The Output of CDC is a grayscale orthomosaic which can easily be threshold to
 achieve a black and white segmentation.
 
-OCDC is developed with Agriculture uses in mind, but can easily be applied to
+CDC is developed with Agriculture uses in mind, but can easily be applied to
 other domains as is or by utilizing the library for custom needs.
 
 # Background and methods
@@ -99,7 +99,7 @@ software like OpenDroneMap, Metashape, or Pix4D together with
 Geographical Information Systems (GIS) information, creating a large
 georeferenced orthomosaic.
 
-In OCDC the Mahalanobis distance in the RGB color space is used as the default
+In CDC the Mahalanobis distance in the RGB color space is used as the default
 color distance. The Mahalanobis distance is defined as
 
 $$
@@ -112,7 +112,7 @@ The parameters $\vec{\mu}$ and $S$ are determined from a set of training pixels.
 
 # Acknowledgements
 
-The OCDC tool was developed by SDU UAS Center as part of the project
+The CDC tool was developed by SDU UAS Center as part of the project
 Præcisionsfrøavl, that was supported by the
 [Green Development and Demonstration Programme (GUDP)](https://gudp.lbst.dk/) and
 [Frøafgiftsfonden](https://froeafgiftsfonden.dk/) both from Denmark.

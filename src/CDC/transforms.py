@@ -66,14 +66,14 @@ class LambdaTransform(BaseTransform):
     --------
     Using a function:
 
-    >>> from OCDC.transforms import LambdaTransform
+    >>> from CDC.transforms import LambdaTransform
     >>> def normalize(image):
     ...     return image / np.max(image)
     >>> transform = LambdaTransform(normalize)
 
     Using a string:
 
-    >>> from OCDC.transforms import LambdaTransform
+    >>> from CDC.transforms import LambdaTransform
     >>> lambda_str = "lambda im: im/np.min(im) + 50"
     >>> transform = LambdaTransform(lambda_str)
     """

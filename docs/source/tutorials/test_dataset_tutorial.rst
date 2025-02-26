@@ -1,11 +1,11 @@
 Tutorial with test dataset
 ==========================
 
-In this tutorial we will show how *OCDCs* CLI can be used on an example dataset of pumpkins to extract the pumpkins in the orthomosaic.
+In this tutorial we will show how *CDCs* CLI can be used on an example dataset of pumpkins to extract the pumpkins in the orthomosaic.
 
 The example dataset can be downloaded from Zenodo on this link: https://zenodo.org/record/8254412.
 
-The example dataset is from a pumpkin field, where the orange pumpkins can be seen on a gray background. save the example dataset in an easy to reach location on your computer, for this tutorial we will placed it in the following directory: */home/ocdc/example_dataset*.
+The example dataset is from a pumpkin field, where the orange pumpkins can be seen on a gray background. save the example dataset in an easy to reach location on your computer, for this tutorial we will placed it in the following directory: */home/cdc/example_dataset*.
 
 The dataset consist of the following files:
 
@@ -24,27 +24,27 @@ To learn the color distribution, the information from the **ccrop_from_orthomosa
     crop_from_orthomosaic_annotated.tif
 
 
-If *OCDC* is not already installed, see :doc:`installation </installation>`.
+If *CDC* is not already installed, see :doc:`installation </installation>`.
 
-With *OCDC* installed the CLI can be run with:
-
-.. code-block:: shell
-
-    python -m OCDC
-
-or if the installation have added *OCDC* to the path it can be invoked simply with:
+With *CDC* installed the CLI can be run with:
 
 .. code-block:: shell
 
-    OCDC
+    python -m CDC
 
-From here on out we will assume *OCDC* is in the path, but if that is not the case for you replace :code:`OCDC` in the following with :code:`python -m OCDC`.
-
-To create a color model from the **crop_from_orthomosaic.tif** and the **crop_from_orthomosaic_annotated.tif** files and apply it on the orthomosaic **20190920_pumpkins_field_101_and_109-cropped.tif** to calculate the color distance, use the following command in the dataset folder e.g. */home/ocdc/example_dataset*:
+or if the installation have added *CDC* to the path it can be invoked simply with:
 
 .. code-block:: shell
 
-    OCDC 20190920_pumpkins_field_101_and_109-cropped.tif \
+    CDC
+
+From here on out we will assume *CDC* is in the path, but if that is not the case for you replace :code:`CDC` in the following with :code:`python -m CDC`.
+
+To create a color model from the **crop_from_orthomosaic.tif** and the **crop_from_orthomosaic_annotated.tif** files and apply it on the orthomosaic **20190920_pumpkins_field_101_and_109-cropped.tif** to calculate the color distance, use the following command in the dataset folder e.g. */home/cdc/example_dataset*:
+
+.. code-block:: shell
+
+    CDC 20190920_pumpkins_field_101_and_109-cropped.tif \
         crop_from_orthomosaic.tif \
         crop_from_orthomosaic_annotated.tif \
         --save_ref_pixels
@@ -57,7 +57,7 @@ The output is new georeferenced orthomosaic with the calculated color distances 
 
 .. figure:: ../_static/pumpkins_example/crop_from_orthomosaic.png
 
-In addition to generating the processed orthomosaic, the *OCDC* also have exported a file **pixel_values/selected.csv** that contains all the color values of the annotated pixels. This can be used to gain a better understanding of the segmentation process. Each row corresponds to the color value of one pixel.
+In addition to generating the processed orthomosaic, the *CDC* also have exported a file **pixel_values/selected.csv** that contains all the color values of the annotated pixels. This can be used to gain a better understanding of the segmentation process. Each row corresponds to the color value of one pixel.
 
 === === ===
 r   g   b

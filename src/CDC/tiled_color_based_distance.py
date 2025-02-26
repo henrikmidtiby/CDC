@@ -12,8 +12,8 @@ import numpy as np
 from numpy.typing import NDArray
 from tqdm import tqdm
 
-from OCDC.color_models import BaseDistance
-from OCDC.orthomosaic_tiler import OrthomosaicTiles
+from CDC.color_models import BaseDistance
+from CDC.orthomosaic_tiler import OrthomosaicTiles
 
 
 class TiledColorBasedDistance:
@@ -29,7 +29,7 @@ class TiledColorBasedDistance:
     output_location
         Where output orthomosaic and tiles are saved.
     **kwargs
-        Arguments to pass on to :class:`~OCDC.orthomosaic_tiler.OrthomosaicTiles`.
+        Arguments to pass on to :class:`~CDC.orthomosaic_tiler.OrthomosaicTiles`.
     """
 
     def __init__(

@@ -1,7 +1,7 @@
 """
 CLI for running Color Segmentation on an Orthomosaic.
 
-See ``OCDC --help`` for a list of arguments.
+See ``CDC --help`` for a list of arguments.
 """
 
 from __future__ import annotations
@@ -12,14 +12,14 @@ import pathlib
 from datetime import datetime
 from typing import Any
 
-from OCDC.color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
-from OCDC.tiled_color_based_distance import TiledColorBasedDistance
-from OCDC.transforms import BaseTransform, GammaTransform, LambdaTransform
+from CDC.color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
+from CDC.tiled_color_based_distance import TiledColorBasedDistance
+from CDC.transforms import BaseTransform, GammaTransform, LambdaTransform
 
 
 def _get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="OCDC",
+        prog="CDC",
         description="""A tool for calculating color distances in an
                        orthomosaic to a reference color based on
                        samples from an annotated image.""",

@@ -1,7 +1,7 @@
 Contributing
 ============
 
-Thank you for your interest in contributing to *OCDC* and we welcome all pull request. To get set for development on *OCDC* see the following.
+Thank you for your interest in contributing to *CDC* and we welcome all pull request. To get set for development on *CDC* see the following.
 
 Development uses pre-commit for code linting and formatting. To setup development with pre-commit follow these steps after cloning the repository:
 
@@ -17,7 +17,7 @@ Activate virtual environment:
 
     source venv/bin/activate
 
-Install *OCDC* python package as editable with the development dependencies:
+Install *CDC* python package as editable with the development dependencies:
 
 .. code-block:: shell
 

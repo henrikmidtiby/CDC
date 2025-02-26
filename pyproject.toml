@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "OCDC"
+name = "CDC"
 version = "0.0.1"
 authors = [
   { name="Henrik Skov Midtiby", email="hemi@mmmi.sdu.dk" },
@@ -12,7 +12,7 @@ maintainers = [
   { name="Henrik Skov Midtiby", email="hemi@mmmi.sdu.dk" },
   { name="Henrik Dyrberg Egemose", email="hde@mmmi.sdu.dk" },
 ]
-description = "Calculate color distances on orthomosaics."
+description = "Color distance calculator."
 readme = "README.md"
 license-files = ["LICEN[CS]E*"]
 requires-python = ">=3.10"
@@ -34,8 +34,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/henrikmidtiby/OCDC"
-Issues = "https://github.com/henrikmidtiby/OCDC/issues"
+Homepage = "https://github.com/henrikmidtiby/CDC"
+Issues = "https://github.com/henrikmidtiby/CDC/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -64,10 +64,10 @@ docs = [
 ]
 
 [project.scripts]
-OCDC = "OCDC.__main__:_main"
+CDC = "CDC.__main__:_main"
 
 [tool.pytest.ini_options]
-addopts = "--cov=OCDC --cov-report html:test_coverage"
+addopts = "--cov=CDC --cov-report html:test_coverage"
 
 [tool.codespell]
 check-hidden = true

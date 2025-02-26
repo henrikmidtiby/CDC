@@ -1,7 +1,7 @@
 Create dataset guide
 ====================
 
-*OCDC* Needs an annotated image where the reference pixels from which the distance is calculated. In this guide we will show how to extract a section of a orthomosaic and how to annotate the section.
+*CDC* Needs an annotated image where the reference pixels from which the distance is calculated. In this guide we will show how to extract a section of a orthomosaic and how to annotate the section.
 
 This guide assumes we have an orthomosaic with the name **ortho.tif**.
 
@@ -51,7 +51,7 @@ To annotate the mask we will use `GIMP <https://www.gimp.org/>`_, but another im
 - Not all pixels of the desired color have to be painted over but at least 100 pixels is necessary, but more is better.
 - Export the image (File -> Export as). We override the mask.png.
 
-We now have all we need to calculate the color distance with *OCDC*
+We now have all we need to calculate the color distance with *CDC*
 
 - The orthomosaic (ortho.tif).
 - reference image (ref.tif).

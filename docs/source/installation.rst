@@ -1,11 +1,11 @@
 Installation
 ============
 
-OCDC is a python package and can be installed with pip:
+CDC is a python package and can be installed with pip:
 
 .. code-block:: shell
 
-   pip install OCDC
+   pip install CDC
 
 It have the following main dependencies:
 
@@ -15,7 +15,7 @@ It have the following main dependencies:
 * scikit-learn
 * tqdm
 
-If the latest version is desired *OCDC* can also be installed directly from git by cloning the repository and in the project folder running:
+If the latest version is desired *CDC* can also be installed directly from git by cloning the repository and in the project folder running:
 
 .. code-block:: shell
 
@@ -33,4 +33,4 @@ All of these methods can also be used inside a virtual environment:
 
    python -m venv venv
    source venv/bin/activate
-   pip install OCDC
+   pip install CDC

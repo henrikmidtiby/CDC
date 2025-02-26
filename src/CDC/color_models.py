@@ -12,7 +12,7 @@ import rasterio
 from numpy.typing import NDArray
 from sklearn import mixture
 
-from OCDC.transforms import BaseTransform
+from CDC.transforms import BaseTransform
 
 
 class ReferencePixels:
@@ -36,7 +36,7 @@ class ReferencePixels:
         self.generate_pixel_values(ref_image, mask_image)
 
     @staticmethod
-    def load_image(file_name: pathlib.Path) -> NDArray:
+    def load_image(file_name: pathlib.Path) -> NDArray[Any]:
         """Load image from file."""
         try:
             with rasterio.open(file_name) as img:
@@ -142,7 +142,7 @@ class BaseDistance(ABC):
     def from_pixel_values(
         cls,
         *,
-        pixel_values: NDArray,
+        pixel_values: NDArray[Any],
         bands_to_use: tuple[int, ...] | list[int] | None = None,
         alpha_channel: int | None = -1,
         transform: BaseTransform | None = None,
@@ -288,7 +288,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         self,
         *,
         n_components: int,
-        reference_pixels: NDArray,
+        reference_pixels: NDArray[Any],
         bands_to_use: tuple[int, ...] | list[int] | None = None,
         transform: BaseTransform | None = None,
     ):
@@ -322,7 +322,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         cls,
         *,
         n_components: int,
-        pixel_values: NDArray,
+        pixel_values: NDArray[Any],
         bands_to_use: tuple[int, ...] | list[int] | None = None,
         alpha_channel: int | None = -1,
         transform: BaseTransform | None = None,

@@ -7,8 +7,8 @@ import pytest
 from numpy.random import default_rng
 from numpy.typing import NDArray
 
-from OCDC.orthomosaic_tiler import OrthomosaicTiles, Tile
-from OCDC.tiled_color_based_distance import TiledColorBasedDistance
+from CDC.orthomosaic_tiler import OrthomosaicTiles, Tile
+from CDC.tiled_color_based_distance import TiledColorBasedDistance
 
 test_float_image_0_1 = default_rng(1234).random((3, 5, 5))
 test_float_image_neg1_1 = test_float_image_0_1 * 2 - 1

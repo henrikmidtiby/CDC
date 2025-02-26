@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 from rasterio.transform import Affine
 
-from OCDC.orthomosaic_tiler import OrthomosaicTiles, Tile
+from CDC.orthomosaic_tiler import OrthomosaicTiles, Tile
 
 
 class TestTiles(unittest.TestCase):

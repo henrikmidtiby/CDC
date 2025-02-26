@@ -5,9 +5,9 @@ from typing import Any
 import numpy as np
 import pytest
 
-from OCDC.__main__ import _parse_args, _process_color_model_args, _process_transform_args
-from OCDC.color_models import GaussianMixtureModelDistance, MahalanobisDistance, ReferencePixels
-from OCDC.transforms import GammaTransform, LambdaTransform
+from CDC.__main__ import _parse_args, _process_color_model_args, _process_transform_args
+from CDC.color_models import GaussianMixtureModelDistance, MahalanobisDistance, ReferencePixels
+from CDC.transforms import GammaTransform, LambdaTransform
 
 test_reference_pixels_values = np.array([[5, 20, 99], [5, 20, 100], [5, 19, 101]])
 

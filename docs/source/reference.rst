@@ -1,7 +1,7 @@
 Reference Manual
 ================
 
-.. currentmodule:: OCDC
+.. currentmodule:: CDC
 
 .. autosummary::
     :toctree: ./reference

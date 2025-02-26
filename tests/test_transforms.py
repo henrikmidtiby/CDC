@@ -6,7 +6,7 @@ import pytest
 from numpy.random import default_rng
 from numpy.typing import NDArray
 
-from OCDC.transforms import GammaTransform, LambdaTransform
+from CDC.transforms import GammaTransform, LambdaTransform
 
 test_float_image_0_1 = default_rng(1234).random((3, 5, 5))
 test_float_image_neg1_1 = test_float_image_0_1 * 2 - 1
