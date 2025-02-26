@@ -342,7 +342,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         self.gmm.fit(self.color_values.transpose())
         self.average = self.gmm.means_
         self.covariance = self.gmm.covariances_
-        self.min_score = np.min(self.gmm.score_samples(self.color_values.transpose()))
+        self.max_score = np.max(self.gmm.score_samples(self.color_values.transpose()))
 
     def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
         """
@@ -352,7 +352,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         image = super().calculate_distance(image)
         pixels = np.reshape(image, (image.shape[0], -1)).transpose()
         loglikelihood = self.gmm.score_samples(pixels)
-        distance = np.sqrt(np.maximum(-(loglikelihood - self.min_score), 0))
+        distance = np.sqrt(np.maximum(-loglikelihood + self.max_score, 0))
         distance_image = np.reshape(distance, (1, image.shape[1], image.shape[2]))
         return distance_image
 
