@@ -193,11 +193,14 @@ def _main() -> None:
     keyword_args = vars(args)
     keyword_args.update(_process_transform_args(args))
     _create_output_location(args.output_location)
-    color_model = _process_color_model_args(args, keyword_args)
-    tcbs = TiledColorBasedDistance(color_model=color_model, **keyword_args)
-    tcbs.process_tiles(save_tiles=args.save_tiles, save_ortho=args.do_not_save_orthomosaic)
-    if args.save_statistics:
-        tcbs.save_statistics(args)
+    try:
+        color_model = _process_color_model_args(args, keyword_args)
+        tcbs = TiledColorBasedDistance(color_model=color_model, **keyword_args)
+        tcbs.process_tiles(save_tiles=args.save_tiles, save_ortho=args.do_not_save_orthomosaic)
+        if args.save_statistics:
+            tcbs.save_statistics(args)
+    except Exception as e:
+        print(f"{ type(e).__name__}: {e}")
 
 
 if __name__ == "__main__":

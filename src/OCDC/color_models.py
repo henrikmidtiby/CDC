@@ -38,8 +38,11 @@ class ReferencePixels:
     @staticmethod
     def load_image(file_name: pathlib.Path) -> NDArray:
         """Load image from file."""
-        with rasterio.open(file_name) as img:
-            return img.read()
+        try:
+            with rasterio.open(file_name) as img:
+                return img.read()
+        except Exception as e:
+            raise OSError(f"Could not open the image at '{ file_name }'") from e
 
     def generate_pixel_values(
         self,

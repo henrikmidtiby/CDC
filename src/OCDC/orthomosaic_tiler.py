@@ -199,13 +199,16 @@ class OrthomosaicTiles:
         left_corner : float
         top_corner : float
         """
-        with rasterio.open(self.orthomosaic) as src:
-            columns = src.width
-            rows = src.height
-            resolution = src.res
-            crs = src.crs
-            left = src.bounds[0]
-            top = src.bounds[3]
+        try:
+            with rasterio.open(self.orthomosaic) as src:
+                columns = src.width
+                rows = src.height
+                resolution = src.res
+                crs = src.crs
+                left = src.bounds[0]
+                top = src.bounds[3]
+        except rasterio.RasterioIOError as e:
+            raise OSError(f"Could not open the orthomsaic at '{ self.orthomosaic }'") from e
         return columns, rows, resolution, crs, left, top
 
     def _define_tiles(self) -> tuple[list[Tile], int, int]:
