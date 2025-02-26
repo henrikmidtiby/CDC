@@ -18,7 +18,8 @@ sys.path.insert(0, os.path.abspath("."))
 project = "CDC"
 copyright = f"2023-{datetime.now().year}, SDU UAS Center"  # noqa: A001
 author = "SDU UAS Center"
-release = "v0.1.0"
+version = CDC.__version__
+release = CDC.__version__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

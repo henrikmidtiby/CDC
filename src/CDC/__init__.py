@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# Current version
+__version__ = "1.0.0"
+
 # import CDC objects
 from .color_models import *
 from .orthomosaic_tiler import *

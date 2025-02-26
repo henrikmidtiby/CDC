@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "CDC"
-version = "0.0.1"
+dynamic = ["version"]
 authors = [
   { name="Henrik Skov Midtiby", email="hemi@mmmi.sdu.dk" },
 ]
@@ -65,6 +65,9 @@ docs = [
 
 [project.scripts]
 CDC = "CDC.__main__:_main"
+
+[tool.hatch.version]
+path = "src/CDC/__init__.py"
 
 [tool.pytest.ini_options]
 addopts = "--cov=CDC --cov-report html:test_coverage"
