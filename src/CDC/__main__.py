@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import Any
 
 from CDC.color_models import BaseDistance, GaussianMixtureModelDistance, MahalanobisDistance
+from CDC.orthomosaic_tiler import OrthomosaicTiles
 from CDC.tiled_color_based_distance import TiledColorBasedDistance
 from CDC.transforms import BaseTransform, GammaTransform, LambdaTransform
 
@@ -195,7 +196,15 @@ def _main() -> None:
     _create_output_location(args.output_location)
     try:
         color_model = _process_color_model_args(args, keyword_args)
-        tcbs = TiledColorBasedDistance(color_model=color_model, **keyword_args)
+        ortho_tiler = OrthomosaicTiles(
+            orthomosaic=args.orthomosaic,
+            tile_size=args.tile_size,
+            run_specific_tile=args.run_specific_tile,
+            run_specific_tileset=args.run_specific_tileset,
+        )
+        tcbs = TiledColorBasedDistance(
+            ortho_tiler=ortho_tiler, color_model=color_model, scale=args.scale, output_location=args.output_location
+        )
         tcbs.process_tiles(save_tiles=args.save_tiles, save_ortho=args.do_not_save_orthomosaic)
         if args.save_statistics:
             tcbs.save_statistics(args)

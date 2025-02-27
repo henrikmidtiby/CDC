@@ -52,19 +52,23 @@ class TestTiledColorSegmenter(unittest.TestCase):
             self.mask = np.ones((1, *test_uint8_image.shape[1:]))
             return test_uint8_image
 
-        tiler_args = {
-            "color_model": ColorModel(),
-            "scale": 5,
-            "output_location": pathlib.Path("/test/home/output"),
+        ortho_tiler_args = {
             "orthomosaic": pathlib.Path("/test/home/ortho.tiff"),
             "tile_size": 400,
             "run_specific_tile": None,
             "run_specific_tileset": None,
         }
+
+        tcbd_args = {
+            "color_model": ColorModel(),
+            "scale": 5,
+            "output_location": pathlib.Path("/test/home/output"),
+        }
         with self.monkeypatch.context() as mp:
             mp.setattr(OrthomosaicTiles, "get_orthomosaic_data", mock_get_orthomosaic_data)
             mp.setattr(Tile, "read_tile", mock_read_tile)
-            tcbs = TiledColorBasedDistance(**tiler_args)  # type: ignore[arg-type]
+            ortho_tiler = OrthomosaicTiles(**ortho_tiler_args)  # type: ignore[arg-type]
+            tcbs = TiledColorBasedDistance(ortho_tiler=ortho_tiler, **tcbd_args)  # type: ignore[arg-type]
             np.testing.assert_equal(tcbs.process_image(test_float_image_0_1), test_float_image_0_1_csa.astype(np.uint8))
             np.testing.assert_equal(
                 tcbs.process_image(test_float_image_neg1_1), test_float_image_neg1_1_csa.astype(np.uint8)

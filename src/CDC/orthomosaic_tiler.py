@@ -114,8 +114,6 @@ class OrthomosaicTiles:
         List of tiles to run e.g. [15, 65] runs tiles 15 and 65.
     run_specific_tileset
         List of ranges of tiles to run e.g. [15, 65] runs all tiles between 15 and 65.
-    **kwargs
-        Not used.
     """
 
     def __init__(
@@ -125,7 +123,6 @@ class OrthomosaicTiles:
         tile_size: int,
         run_specific_tile: list[int] | None = None,
         run_specific_tileset: list[int] | None = None,
-        **kwargs: Any,
     ):
         self.orthomosaic = orthomosaic
         self.tile_size = tile_size

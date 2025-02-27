@@ -22,25 +22,25 @@ class TiledColorBasedDistance:
 
     Parameters
     ----------
+    ortho_tiler
+        An instance of :class:`~CDC.orthomosaic_tiler.OrthomosaicTiles`
     color_model
-        The color model to use for distance calculations.
+        The color model to use for distance calculations. See :mod:`~CDC.color_models`
     scale
         A scale factor to scale the calculated distances with.
     output_location
         Where output orthomosaic and tiles are saved.
-    **kwargs
-        Arguments to pass on to :class:`~CDC.orthomosaic_tiler.OrthomosaicTiles`.
     """
 
     def __init__(
         self,
         *,
+        ortho_tiler: OrthomosaicTiles,
         color_model: BaseDistance,
         scale: float,
         output_location: pathlib.Path,
-        **kwargs: Any,
     ):
-        self.ortho_tiler = OrthomosaicTiles(**kwargs)
+        self.ortho_tiler = ortho_tiler
         self.output_location = output_location
         self.colormodel = color_model
         self.output_scale_factor = scale
