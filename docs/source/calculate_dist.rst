@@ -29,9 +29,9 @@ Calculating distance to the color model using Gaussian Mixture Model
 
 To calculate the color distance using the Gaussian Mixture Model [#gmm]_, the following equation is used to convert the loglikelihood to a distance:
 
-.. math:: \sqrt{\max\{-\left(L-L_{min}\right),0\}}
+.. math:: \sqrt{\max\{-\left(L-L_{max}\right),0\}}
 
-Where :math:`L` is the loglikelihood from the Gaussian Mixture Model and :math:`L_{min}` is the minimum loglikelihood of the all the annotated pixels. :math:`L_{min}` is used as an approximation of the global minimum of the loglikelihood and the :math:`\max` function is to make sure value under the square root cannot be negative. The subtraction of :math:`L_{min}` is to achieve a minimum distance close to zero when the values are close to the annotated pixels.
+Where :math:`L` is the loglikelihood from the Gaussian Mixture Model and :math:`L_{max}` is the maximum loglikelihood of the all the annotated pixels. :math:`L_{max}` is used as an approximation of the global maximum of the loglikelihood and the :math:`\max` function is to make sure value under the square root cannot be negative. The subtraction of :math:`L_{max}` is to achieve a minimum distance close to zero when the values are close to the annotated pixels.
 
 .. rubric:: Footnotes
 

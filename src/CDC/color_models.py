@@ -82,6 +82,10 @@ class ReferencePixels:
 class BaseDistance(ABC):
     """
     Base class for all color distance models.
+    Can be used to create new methods for calculating the color distance.
+    Sub classes must implement :meth:`~CDC.color_models.calculate_distance`,
+    :meth:`~CDC.color_models.calculate_statistics` and
+    :meth:`~CDC.color_models.show_statistics`.
 
     Parameters
     ----------
@@ -224,12 +228,16 @@ class BaseDistance(ABC):
 
     @abstractmethod
     def calculate_statistics(self) -> None:
-        """Calculate the necessary statistics for performing the distance calculation, i.e. the covariance and average."""
+        """Calculate the necessary statistics for performing the distance calculation, i.e. the covariance and average or similar.
+        Must be implemented by subclasses.
+        """
         pass
 
     @abstractmethod
     def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
-        """Calculate the color distance for each pixel in the image to the reference."""
+        """Calculate the color distance for each pixel in the image to the reference.
+        Subclasses must implement this and call super() as the first thing to apply band selection and transforms.
+        """
         if self.transform is not None:
             image = self.transform.transform(image)
         image = image[self.bands_to_use, :, :]
@@ -237,7 +245,9 @@ class BaseDistance(ABC):
 
     @abstractmethod
     def show_statistics(self) -> None:
-        """Print the statistics to screen."""
+        """Print the statistics to screen.
+        Subclasses must implement this and print the calculated statistics to screen.
+        """
         pass
 
 
@@ -248,6 +258,7 @@ class MahalanobisDistance(BaseDistance):
     """
 
     def calculate_statistics(self) -> None:
+        """Calculate covariance and average."""
         self.covariance: NDArray[Any] = np.cov(self.color_values)
         self.average = np.average(self.color_values, axis=1)
 
@@ -267,6 +278,7 @@ class MahalanobisDistance(BaseDistance):
         return distance_image
 
     def show_statistics(self) -> None:
+        """Print the statistics to screen."""
         print("Average color value of annotated pixels")
         print(self.average)
         print("Covariance matrix of the annotated pixels")
@@ -338,6 +350,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         )
 
     def calculate_statistics(self) -> None:
+        """Calculate covariance and average."""
         self.gmm = mixture.GaussianMixture(n_components=self.n_components, covariance_type="full")
         self.gmm.fit(self.color_values.transpose())
         self.average = self.gmm.means_
@@ -357,6 +370,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         return distance_image
 
     def show_statistics(self) -> None:
+        """Print the statistics to screen."""
         print("GMM")
         print(self.gmm)
         print(self.average)
