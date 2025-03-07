@@ -1,4 +1,4 @@
-name: Publish Python distribution to PyPI and TestPyPI
+name: Publish Python distribution to PyPI and TestPyPI. Create Release and upload docs.
 
 on: push
 
@@ -118,3 +118,38 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
+
+  # Build docs job
+  build_docs:
+    needs: github-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build docs
+        id: build
+        run: |
+          pip install .[docs]
+          make -C docs html
+
+      - name: Upload doc build as artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/build/html
+
+  # Deployment job
+  deploy_docs:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    needs: build_docs
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
