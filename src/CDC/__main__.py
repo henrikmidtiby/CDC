@@ -148,6 +148,13 @@ def _get_parser() -> argparse.ArgumentParser:
         metavar="FROM_TILE_ID TO_TILE_ID",
         help="takes two inputs like (--from_specific_tileset 16 65). This will run every tile from 16 to 65.",
     )
+    tile_group.add_argument(
+        "--max_workers",
+        default=os.cpu_count(),
+        type=int,
+        metavar="THREADS",
+        help=f"Maximum number of workers used to process tiles. Default to os.cpu_count() ({os.cpu_count()}).",
+    )
     return parser
 
 
@@ -205,7 +212,9 @@ def _main() -> None:
         tcbs = TiledColorBasedDistance(
             ortho_tiler=ortho_tiler, color_model=color_model, scale=args.scale, output_location=args.output_location
         )
-        tcbs.process_tiles(save_tiles=args.save_tiles, save_ortho=args.do_not_save_orthomosaic)
+        tcbs.process_tiles(
+            save_tiles=args.save_tiles, save_ortho=args.do_not_save_orthomosaic, max_workers=args.max_workers
+        )
         if args.save_statistics:
             tcbs.save_statistics(args)
     except Exception as e:

@@ -19,6 +19,11 @@ test_float_image_neg1_1_csa = np.minimum(np.abs(5 * test_float_image_neg1_1), 25
 test_uint8_image_csa = np.minimum(np.abs(5 * test_uint8_image), 255)
 
 
+class ColorModel:
+    def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
+        return image
+
+
 class TestTiledColorSegmenter(unittest.TestCase):
     def setUp(self) -> None:
         self.monkeypatch = pytest.MonkeyPatch()
@@ -32,10 +37,6 @@ class TestTiledColorSegmenter(unittest.TestCase):
             TiledColorBasedDistance.convertScaleAbs(test_float_image_neg1_1, 5), test_float_image_neg1_1_csa
         )
         np.testing.assert_equal(TiledColorBasedDistance.convertScaleAbs(test_uint8_image, 5), test_uint8_image_csa)
-
-        class ColorModel:
-            def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
-                return image
 
         def mock_get_orthomosaic_data(
             *args: Any, **kwargs: dict[str, Any]

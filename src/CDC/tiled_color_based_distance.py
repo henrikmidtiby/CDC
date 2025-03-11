@@ -5,15 +5,16 @@ from __future__ import annotations
 import os
 import pathlib
 from datetime import datetime
+from functools import partial
 from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
-from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 from CDC.color_models import BaseDistance
-from CDC.orthomosaic_tiler import OrthomosaicTiles
+from CDC.orthomosaic_tiler import OrthomosaicTiles, Tile
 
 
 class TiledColorBasedDistance:
@@ -59,7 +60,25 @@ class TiledColorBasedDistance:
         distance = distance.astype(np.uint8)
         return distance
 
-    def process_tiles(self, save_tiles: bool = False, save_ortho: bool = True) -> None:
+    def process_tile(self, tile: Tile, save_tiles: bool = False) -> Tile:
+        """
+        Calculate color based distance on given tile.
+
+        Parameters
+        ----------
+        save_tiles
+            Save all tiles to output_location.
+        """
+        img = tile.read_tile(self.ortho_tiler.orthomosaic)
+        distance_img = self.process_image(img)
+        if save_tiles:
+            tile.save_tile(distance_img, self.output_location.joinpath("tiles/"))
+        tile.output = distance_img
+        return tile
+
+    def process_tiles(
+        self, save_tiles: bool = False, save_ortho: bool = True, max_workers: int | None = os.cpu_count()
+    ) -> None:
         """
         Calculate color based distance on all tiles and save output.
 
@@ -68,14 +87,17 @@ class TiledColorBasedDistance:
         save_tiles
             Save all tiles to output_location.
         save_ortho
-            Save orthomosaic to output_location
+            Save orthomosaic to output_location.
+        max_workers
+            Maximum number of threads to use for processing.
         """
-        for tile in tqdm(self.ortho_tiler.tiles):
-            img = tile.read_tile(self.ortho_tiler.orthomosaic)
-            distance_img = self.process_image(img)
-            if save_tiles:
-                tile.save_tile(distance_img, self.output_location.joinpath("tiles/"))
-            tile.output = distance_img
+        output_tiles = process_map(
+            partial(self.process_tile, save_tiles=save_tiles),
+            self.ortho_tiler.tiles,
+            chunksize=1,
+            max_workers=max_workers,
+        )
+        self.ortho_tiler.tiles = list(output_tiles)
         if save_ortho:
             output_filename = self.output_location.joinpath("orthomosaic.tiff")
             self.ortho_tiler.save_orthomosaic_from_tile_output(output_filename)
