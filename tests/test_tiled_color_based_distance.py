@@ -75,7 +75,7 @@ class TestTiledColorSegmenter(unittest.TestCase):
                 tcbs.process_image(test_float_image_neg1_1), test_float_image_neg1_1_csa.astype(np.uint8)
             )
             np.testing.assert_equal(tcbs.process_image(test_uint8_image), test_uint8_image_csa)
-            tcbs.process_tiles(save_tiles=False, save_ortho=False)
+            tcbs.process_tiles(save_tiles=False, save_ortho=False, max_workers=1)
             assert len(tcbs.ortho_tiler.tiles) == int(8000 / 400 + 1) * int(4000 / 400 + 1)
             np.testing.assert_equal(tcbs.ortho_tiler.tiles[0].output, test_uint8_image_csa)
             _, mean_pixel_value = tcbs._calculate_statistics()

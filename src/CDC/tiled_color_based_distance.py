@@ -11,6 +11,7 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
+from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
 from CDC.color_models import BaseDistance
@@ -91,12 +92,18 @@ class TiledColorBasedDistance:
         max_workers
             Maximum number of threads to use for processing.
         """
-        output_tiles = process_map(
-            partial(self.process_tile, save_tiles=save_tiles),
-            self.ortho_tiler.tiles,
-            chunksize=1,
-            max_workers=max_workers,
-        )
+        if max_workers == 1 or max_workers is None:
+            output_tiles = tqdm(
+                map(partial(self.process_tile, save_tiles=save_tiles), self.ortho_tiler.tiles),
+                total=len(self.ortho_tiler.tiles),
+            )
+        else:
+            output_tiles = process_map(
+                partial(self.process_tile, save_tiles=save_tiles),
+                self.ortho_tiler.tiles,
+                chunksize=1,
+                max_workers=max_workers,
+            )
         self.ortho_tiler.tiles = list(output_tiles)
         if save_ortho:
             output_filename = self.output_location.joinpath("orthomosaic.tiff")
