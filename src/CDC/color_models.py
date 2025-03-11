@@ -42,7 +42,7 @@ class ReferencePixels:
             with rasterio.open(file_name) as img:
                 return img.read()
         except Exception as e:
-            raise OSError(f"Could not open the image at '{ file_name }'") from e
+            raise OSError(f"Could not open the image at '{file_name}'") from e
 
     def generate_pixel_values(
         self,
@@ -171,14 +171,14 @@ class BaseDistance(ABC):
             if alpha_channel is not None:
                 if alpha_channel < -1 or alpha_channel > number_of_bands - 1:
                     raise ValueError(
-                        f"Alpha channel have to be between -1 and {number_of_bands-1}, but got {alpha_channel}."
+                        f"Alpha channel have to be between -1 and {number_of_bands - 1}, but got {alpha_channel}."
                     )
                 elif alpha_channel == -1:
                     alpha_channel = number_of_bands - 1
                 self.bands_to_use = tuple(x for x in self.bands_to_use if x != alpha_channel)
         for band in self.bands_to_use:
             if band < 0 or band > number_of_bands - 1:
-                raise ValueError(f"Bands have to be between 0 and {number_of_bands-1}, but got {band}.")
+                raise ValueError(f"Bands have to be between 0 and {number_of_bands - 1}, but got {band}.")
 
     @staticmethod
     def _is_int(array: NDArray[Any]) -> bool:
@@ -203,7 +203,7 @@ class BaseDistance(ABC):
         else:
             header_list = header.split(",")
             csv_header = "".join([f"{header_list[i]}\t" for i in self.bands_to_use])[:-1]  # type: ignore[union-attr]
-        print(f'Writing pixel values to the file "{ filename }"')
+        print(f'Writing pixel values to the file "{filename}"')
         np.savetxt(
             filename,
             values.transpose(),

@@ -12,82 +12,82 @@ library(cowplot)
 ```
 
 ```{r}
-pixel_values <- readr::read_delim('pixel_values.csv', 
-                                  delim='\t', 
+pixel_values <- readr::read_delim('pixel_values.csv',
+                                  delim='\t',
                                   col_names = c("B", "G", "R"))
 ```
 
 ```{r}
 pixel_values %>%
-  ggplot() + 
-  aes(x = R) + 
-  aes(y = G) + 
-  geom_point(size = 1.5, alpha = 0.5, fill = "black", stroke = NA) + 
-  theme_cowplot() + 
-  labs(title = "Distribution of color values", 
-       x = "Red [0 - 255]", 
-       y = "Green [0 - 255]") + 
-  expand_limits(x = c(0, 255)) + 
-  expand_limits(y = c(0, 255)) + 
-  scale_x_continuous(breaks = c(0, 50, 100, 150, 200, 255)) + 
-  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 255)) + 
+  ggplot() +
+  aes(x = R) +
+  aes(y = G) +
+  geom_point(size = 1.5, alpha = 0.5, fill = "black", stroke = NA) +
+  theme_cowplot() +
+  labs(title = "Distribution of color values",
+       x = "Red [0 - 255]",
+       y = "Green [0 - 255]") +
+  expand_limits(x = c(0, 255)) +
+  expand_limits(y = c(0, 255)) +
+  scale_x_continuous(breaks = c(0, 50, 100, 150, 200, 255)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 255)) +
   theme(panel.grid = element_line(color = "black",
                                   size = 0.1,
                                   linetype = 1)) -> p
-ggsave("plots/distribution_of_color_values_red_green.png", 
-       p, 
-       width = 7, 
-       height = 4, 
+ggsave("plots/distribution_of_color_values_red_green.png",
+       p,
+       width = 7,
+       height = 4,
        bg = "white")
 ```
 
 
 ```{r}
 pixel_values %>%
-  ggplot() + 
-  aes(x = R) + 
-  aes(y = B) + 
-  geom_point(size = 1.5, alpha = 0.5, fill = "black", stroke = NA) + 
-  theme_cowplot() + 
-  labs(title = "Distribution of color values", 
-       x = "Red [0 - 255]", 
-       y = "Blue [0 - 255]") + 
-  expand_limits(x = c(0, 255)) + 
-  expand_limits(y = c(0, 255)) + 
-  scale_x_continuous(breaks = c(0, 50, 100, 150, 200, 255)) + 
-  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 255)) + 
+  ggplot() +
+  aes(x = R) +
+  aes(y = B) +
+  geom_point(size = 1.5, alpha = 0.5, fill = "black", stroke = NA) +
+  theme_cowplot() +
+  labs(title = "Distribution of color values",
+       x = "Red [0 - 255]",
+       y = "Blue [0 - 255]") +
+  expand_limits(x = c(0, 255)) +
+  expand_limits(y = c(0, 255)) +
+  scale_x_continuous(breaks = c(0, 50, 100, 150, 200, 255)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 255)) +
   theme(panel.grid = element_line(color = "black",
                                   size = 0.1,
                                   linetype = 1)) -> p
-ggsave("plots/distribution_of_color_values_red_blue.png", 
-       p, 
-       width = 7, 
-       height = 4, 
+ggsave("plots/distribution_of_color_values_red_blue.png",
+       p,
+       width = 7,
+       height = 4,
        bg = "white")
 ```
 
 
 ```{r}
 pixel_values %>%
-  ggplot() + 
-  aes(x = B) + 
-  aes(y = G) + 
-  geom_point(size = 1.5, alpha = 0.5, fill = "black", stroke = NA) + 
-  theme_cowplot() + 
-  labs(title = "Distribution of color values", 
-       x = "Blue [0 - 255]", 
-       y = "Green [0 - 255]") + 
-  expand_limits(x = c(0, 255)) + 
-  expand_limits(y = c(0, 255)) + 
-  scale_x_continuous(breaks = c(0, 50, 100, 150, 200, 255)) + 
-  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 255)) + 
+  ggplot() +
+  aes(x = B) +
+  aes(y = G) +
+  geom_point(size = 1.5, alpha = 0.5, fill = "black", stroke = NA) +
+  theme_cowplot() +
+  labs(title = "Distribution of color values",
+       x = "Blue [0 - 255]",
+       y = "Green [0 - 255]") +
+  expand_limits(x = c(0, 255)) +
+  expand_limits(y = c(0, 255)) +
+  scale_x_continuous(breaks = c(0, 50, 100, 150, 200, 255)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 255)) +
   theme(panel.grid = element_line(color = "black",
                                   size = 0.1,
                                   linetype = 1)) -> p
 p
-ggsave("plots/distribution_of_color_values_blue_green.png", 
-       p, 
-       width = 7, 
-       height = 4, 
+ggsave("plots/distribution_of_color_values_blue_green.png",
+       p,
+       width = 7,
+       height = 4,
        bg = "white")
 ```

@@ -132,7 +132,7 @@ def _get_parser() -> argparse.ArgumentParser:
         "--tile_size",
         default=3000,
         type=int,
-        help="The height and width of tiles that are analyzed. " "Default is 3000.",
+        help="The height and width of tiles that are analyzed. Default is 3000.",
     )
     tile_group.add_argument(
         "--run_specific_tile",
@@ -209,7 +209,7 @@ def _main() -> None:
         if args.save_statistics:
             tcbs.save_statistics(args)
     except Exception as e:
-        print(f"{ type(e).__name__}: {e}")
+        print(f"{type(e).__name__}: {e}")
 
 
 if __name__ == "__main__":

@@ -101,7 +101,7 @@ class TiledColorBasedDistance:
         """
         histogram, mean_pixel_value = self._calculate_statistics()
         statistics_path = self.output_location.joinpath("statistics")
-        print(f'Writing statistics to the folder "{ statistics_path }"')
+        print(f'Writing statistics to the folder "{statistics_path}"')
         # Plot histogram of pixel values
         plt.plot(histogram)
         plt.title("Histogram of pixel values")
