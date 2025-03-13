@@ -46,7 +46,7 @@ class Tile:
         self.ulc = start_point
         self.lrc = (start_point[0] + height, start_point[1] + width)
         self.processing_range: list[list[float]] = [[0, 0], [0, 0]]
-        self.resolution = resolution
+        self.resolution = (resolution[1], resolution[0])
         self.crs = crs
         self.left = left
         self.top = top
@@ -55,8 +55,8 @@ class Tile:
             self.left + (self.ulc[1] * self.resolution[1]),
         ]
         self.transform = Affine.translation(
-            self.ulc_global[1] + self.resolution[0] / 2, self.ulc_global[0] - self.resolution[0] / 2
-        ) * Affine.scale(self.resolution[0], -self.resolution[0])
+            self.ulc_global[1] + self.resolution[1] / 2, self.ulc_global[0] - self.resolution[0] / 2
+        ) * Affine.scale(self.resolution[1], -self.resolution[0])
         self.range: list[list[float]] | None = None
         self.tile_number: int = 0
         """The tile number."""
