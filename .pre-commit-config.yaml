@@ -40,7 +40,6 @@ repos:
   - repo: local
     hooks:
       - id: pytest-check
-        stages: [pre-push]
         name: pytest-check
         entry: pytest
         language: system
