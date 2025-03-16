@@ -15,16 +15,16 @@ class TestTiles(unittest.TestCase):
             "position": [0, 0],
             "height": 300,
             "width": 400,
-            "resolution": (0.5, 0.6),
+            "resolution": (0.6, 0.5),
             "crs": "test",
             "left": 100.2,
             "top": 100.3,
         }
-        t_tile = Tile(**tile_args)  # type: ignore[arg-type]
+        t_tile = Tile(**tile_args)
         assert t_tile.ulc == (1, 2)
         assert t_tile.lrc == (1 + 300, 2 + 400)
-        transform = Affine.translation(100.2 + (2 * 0.6) + 0.5 / 2, 100.3 - (1 * 0.5) - 0.5 / 2) * Affine.scale(
-            0.5, -0.5
+        transform = Affine.translation(100.2 + (2 * 0.6) + 0.6 / 2, 100.3 - (1 * 0.5) - 0.5 / 2) * Affine.scale(
+            0.6, -0.5
         )
         assert t_tile.transform == transform
 
@@ -53,7 +53,7 @@ class TestOrthomosaicTiler(unittest.TestCase):
         }
         with self.monkeypatch.context() as mp:
             mp.setattr(OrthomosaicTiles, "get_orthomosaic_data", mock_get_orthomosaic_data)
-            ortho_tiler = OrthomosaicTiles(**orthomosaic_tiler_args)  # type: ignore[arg-type]
+            ortho_tiler = OrthomosaicTiles(**orthomosaic_tiler_args)
             tiles, _, _ = ortho_tiler._define_tiles()
             assert len(tiles) == int(8000 / 400 + 1) * int(4000 / 400 + 1)
             p_tiles = ortho_tiler.get_tiles()
@@ -73,7 +73,7 @@ class TestOrthomosaicTiler(unittest.TestCase):
             ortho_tiler.run_specific_tileset = None
             with pytest.raises(IndexError):
                 ortho_tiler.get_list_of_specified_tiles(p_tiles)
-            ortho_tiler.run_specific_tile = 5000  # type: ignore[assignment]
+            ortho_tiler.run_specific_tile = 5000
             with pytest.raises(TypeError):
                 ortho_tiler.get_list_of_specified_tiles(p_tiles)
             ortho_tiler.run_specific_tile = None
