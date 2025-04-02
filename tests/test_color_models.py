@@ -13,10 +13,8 @@ from CDC.color_models import GaussianMixtureModelDistance, MahalanobisDistance, 
 random.seed(1234)
 np.random.seed(1234)
 
-test_reference_pixel_image = np.astype(
-    np.arange(0, 3 * 20 * 20, 1).reshape((3, 20, 20)) / (3 * 20 * 20) * 255, np.uint8
-)
-test_mask = np.astype(np.arange(0, 20 * 20, 1).reshape((1, 20, 20)) / (20 * 20) * 255, np.uint8)
+test_reference_pixel_image = (np.arange(0, 3 * 20 * 20, 1).reshape((3, 20, 20)) / (3 * 20 * 20) * 255).astype(np.uint8)
+test_mask = (np.arange(0, 20 * 20, 1).reshape((1, 20, 20)) / (20 * 20) * 255).astype(np.uint8)
 test_bw_mask = np.where(test_mask > 100, 0, 255)
 test_red_mask = test_reference_pixel_image
 test_red_mask[0, :, :] = np.where(test_mask % 2 == 0, test_red_mask[0, :, :], 255)
