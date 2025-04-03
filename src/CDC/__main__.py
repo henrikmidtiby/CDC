@@ -135,6 +135,12 @@ def _get_parser() -> argparse.ArgumentParser:
         help="The height and width of tiles that are analyzed. Default is 3000.",
     )
     tile_group.add_argument(
+        "--tile_overlap",
+        default=0,
+        type=float,
+        help="Overlap between tiles as a fraction of tile width and height. E.g. --tile_overlap 0.1 will give a 10%% overlap",
+    )
+    tile_group.add_argument(
         "--run_specific_tile",
         nargs="+",
         type=int,
@@ -206,6 +212,7 @@ def _main() -> None:
         ortho_tiler = OrthomosaicTiles(
             orthomosaic=args.orthomosaic,
             tile_size=args.tile_size,
+            overlap=args.tile_overlap,
             run_specific_tile=args.run_specific_tile,
             run_specific_tileset=args.run_specific_tileset,
         )
