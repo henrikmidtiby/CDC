@@ -53,8 +53,6 @@ class Tile:
         self.overlap = overlap
         self.tile_number = number
         """The tile number. Useful for identification."""
-        self.output: NDArray[Any] = np.zeros(0)
-        """np.ndarray : processed output of tile to save for later use."""
         windows = self.set_tile_data_from_orthomosaic()
         self.window = windows[0]
         """Window: Window specifying the region of the orthomosaic for this tile."""

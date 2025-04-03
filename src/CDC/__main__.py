@@ -47,11 +47,6 @@ def _get_parser() -> argparse.ArgumentParser:
         type=pathlib.Path,
     )
     output_group.add_argument(
-        "--do_not_save_orthomosaic",
-        action="store_false",
-        help="If set the no orthomosaic of the result is saved at output_location/orthomosaic.tiff. Default is to save orthomosaic.",
-    )
-    output_group.add_argument(
         "--save_tiles",
         action="store_true",
         help="If set tiles are saved at output_location/tiles. Useful for debugging or parameter tweaking. Default no tiles are saved.",
@@ -219,9 +214,7 @@ def _main() -> None:
         tcbs = TiledColorBasedDistance(
             ortho_tiler=ortho_tiler, color_model=color_model, scale=args.scale, output_location=args.output_location
         )
-        tcbs.process_tiles(
-            save_tiles=args.save_tiles, save_ortho=args.do_not_save_orthomosaic, max_workers=args.max_workers
-        )
+        tcbs.process_tiles(save_tiles=args.save_tiles, max_workers=args.max_workers)
         if args.save_statistics:
             tcbs.save_statistics(args)
     except Exception as e:
