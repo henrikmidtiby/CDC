@@ -53,14 +53,7 @@ class TiledColorBasedDistance:
     def convertScaleAbs(image: NDArray[Any], alpha: float) -> NDArray[Any]:
         """Scale image by alpha and take the absolute value."""
         scaled_img: NDArray[Any] = np.minimum(np.abs(alpha * image), 255)
-        return scaled_img
-
-    def process_image(self, image: NDArray[Any]) -> NDArray[Any]:
-        """Calculate the color based distance on image."""
-        distance_image = self.colormodel.calculate_distance(image)
-        distance = self.convertScaleAbs(distance_image, alpha=self.output_scale_factor)
-        distance = distance.astype(np.uint8)
-        return distance
+        return scaled_img.astype(np.uint8)
 
     def process_tiles(self, save_tiles: bool = False, max_workers: int | None = os.cpu_count()) -> None:
         """
@@ -77,6 +70,7 @@ class TiledColorBasedDistance:
             max_workers = 1
         read_lock = threading.Lock()
         write_lock = threading.Lock()
+        process_lock = threading.Lock()
         output_filename = self.output_location.joinpath("orthomosaic.tiff")
         with rasterio.open(self.ortho_tiler.orthomosaic) as src:
             profile = src.profile
@@ -91,14 +85,16 @@ class TiledColorBasedDistance:
                     mask = mask_temp[0]
                     for band in range(mask_temp.shape[0]):
                         mask = mask & mask_temp[band]
-                    distance_img = self.process_image(img)
-                    with write_lock:
-                        output = tile.get_window_pixels(distance_img)
-                        dst.write(output, window=tile.window)
-                        mask = tile.get_window_pixels(np.expand_dims(mask, 0)).squeeze()
-                        dst.write_mask(mask, window=tile.window)
+                    with process_lock:  # Lock needed or running on windows crashes. see docs for further explanation.
+                        distance_image = self.colormodel.calculate_distance(img)
+                    distance = self.convertScaleAbs(distance_image, alpha=self.output_scale_factor)
+                    output = tile.get_window_pixels(distance)
+                    mask = tile.get_window_pixels(np.expand_dims(mask, 0)).squeeze()
                     if save_tiles:
-                        tile.save_tile(distance_img, mask, self.output_location)
+                        tile.save_tile(distance, mask, self.output_location)
+                    with write_lock:
+                        dst.write(output, window=tile.window)
+                        dst.write_mask(mask, window=tile.window)
 
                 thread_map(process, self.ortho_tiler.tiles, max_workers=max_workers)
         with rasterio.open(output_filename, "r+") as dst:

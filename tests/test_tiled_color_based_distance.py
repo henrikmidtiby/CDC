@@ -32,12 +32,15 @@ class TestTiledColorSegmenter(unittest.TestCase):
     def test_tiled_color_segmenter(self) -> None:
         # test convertScaleAbs
         np.testing.assert_equal(
-            TiledColorBasedDistance.convertScaleAbs(test_float_image_0_1, 5), test_float_image_0_1_csa
+            TiledColorBasedDistance.convertScaleAbs(test_float_image_0_1, 5), test_float_image_0_1_csa.astype(np.uint8)
         )
         np.testing.assert_equal(
-            TiledColorBasedDistance.convertScaleAbs(test_float_image_neg1_1, 5), test_float_image_neg1_1_csa
+            TiledColorBasedDistance.convertScaleAbs(test_float_image_neg1_1, 5),
+            test_float_image_neg1_1_csa.astype(np.uint8),
         )
-        np.testing.assert_equal(TiledColorBasedDistance.convertScaleAbs(test_uint8_image, 5), test_uint8_image_csa)
+        np.testing.assert_equal(
+            TiledColorBasedDistance.convertScaleAbs(test_uint8_image, 5), test_uint8_image_csa.astype(np.uint8)
+        )
 
         def mock_set_tile_data_from_orthomosaic(
             self: Any, *args: Any, **kwargs: dict[str, Any]
@@ -83,9 +86,4 @@ class TestTiledColorSegmenter(unittest.TestCase):
             mp.setattr(Tile, "read_tile", mock_read_tile)
             ortho_tiler = OrthomosaicTiles(**ortho_tiler_args)  # type: ignore[arg-type]
             tcbs = TiledColorBasedDistance(ortho_tiler=ortho_tiler, **tcbd_args)  # type: ignore[arg-type]
-            np.testing.assert_equal(tcbs.process_image(test_float_image_0_1), test_float_image_0_1_csa.astype(np.uint8))
-            np.testing.assert_equal(
-                tcbs.process_image(test_float_image_neg1_1), test_float_image_neg1_1_csa.astype(np.uint8)
-            )
-            np.testing.assert_equal(tcbs.process_image(test_uint8_image), test_uint8_image_csa)
             assert len(tcbs.ortho_tiler.tiles) == int(8000 / 400) * int(4000 / 400)
