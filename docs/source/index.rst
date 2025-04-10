@@ -41,4 +41,4 @@ Index
    reference
    CLI
    contributing
-   calculate_dist
+   notes

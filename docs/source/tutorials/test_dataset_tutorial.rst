@@ -77,4 +77,4 @@ Here the values from the example have been plotted:
 
 .. figure:: ../_static/pumpkins_example/distribution_of_color_values_red_blue.png
 
-If you would like to know more about how the algorithm for calculating the distances work see :doc:`Calculate distances to reference color </calculate_dist>`
+If you would like to know more about how the algorithm for calculating the distances work see :doc:`Calculate distances to reference color </notes/calculate_dist>`

@@ -1,4 +1,4 @@
-Reference - Calculate distances to reference Color
+Calculate distances to reference Color
 ==================================================
 
 In this document the central part of the color distance calculation is explained. The calculation consists of two steps
