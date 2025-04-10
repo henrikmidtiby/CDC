@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import Any
 
-import numpy as np  # noqa: F401 # so numpy can be used in lambdas
-from numpy.typing import NDArray
+import numpy as np
 
 
 class BaseTransform(ABC):
@@ -18,7 +16,7 @@ class BaseTransform(ABC):
         pass
 
     @abstractmethod
-    def transform(self, image: NDArray[Any]) -> NDArray[Any]:
+    def transform(self, image: np.ndarray) -> np.ndarray:
         """
         Transform the image.
 
@@ -45,7 +43,7 @@ class GammaTransform(BaseTransform):
             raise ValueError("Gamma must be positive")
         self.gamma: float = gamma
 
-    def transform(self, image: NDArray[Any]) -> NDArray[Any]:
+    def transform(self, image: np.ndarray) -> np.ndarray:
         if np.any(image < 0):
             raise ValueError("Image can not have negative values in the Gamma Transform")
         gamma_corrected_image = image**self.gamma
@@ -78,16 +76,16 @@ class LambdaTransform(BaseTransform):
     >>> transform = LambdaTransform(lambda_str)
     """
 
-    def __init__(self, lambda_expression: Callable[[NDArray[Any]], NDArray[Any]] | str) -> None:
+    def __init__(self, lambda_expression: Callable[[np.ndarray], np.ndarray] | str) -> None:
         if isinstance(lambda_expression, str):
             if lambda_expression.startswith("lambda"):
-                self.lambda_exp: Callable[[NDArray[Any]], NDArray[Any]] = eval(lambda_expression)
+                self.lambda_exp: Callable[[np.ndarray], np.ndarray] = eval(lambda_expression)
             else:
                 raise ValueError("Lambda expression as string have to start with 'lambda'")
         else:
             self.lambda_exp = lambda_expression
 
-    def transform(self, image: NDArray[Any]) -> NDArray[Any]:
+    def transform(self, image: np.ndarray) -> np.ndarray:
         res_image = self.lambda_exp(image)
         if res_image.shape != image.shape:
             raise ValueError(

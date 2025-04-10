@@ -11,7 +11,6 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
-from numpy.typing import NDArray
 from rasterio.enums import Resampling
 from tqdm.contrib.concurrent import thread_map
 
@@ -50,9 +49,9 @@ class TiledColorBasedDistance:
         self.ortho_tiler.divide_orthomosaic_into_tiles()
 
     @staticmethod
-    def convertScaleAbs(image: NDArray[Any], alpha: float) -> NDArray[Any]:
+    def convertScaleAbs(image: np.ndarray, alpha: float) -> np.ndarray:
         """Scale image by alpha and take the absolute value."""
-        scaled_img: NDArray[Any] = np.minimum(np.abs(alpha * image), 255)
+        scaled_img: np.ndarray = np.minimum(np.abs(alpha * image), 255)
         return scaled_img.astype(np.uint8)
 
     def process_tiles(self, save_tiles: bool = False, max_workers: int | None = os.cpu_count()) -> None:
@@ -100,7 +99,7 @@ class TiledColorBasedDistance:
         with rasterio.open(output_filename, "r+") as dst:
             dst.build_overviews(overview_factors, Resampling.average)
 
-    def _calculate_statistics(self) -> tuple[NDArray[Any], float]:
+    def _calculate_statistics(self) -> tuple[np.ndarray, float]:
         image_statistics = np.zeros(256)
         for tile in self.ortho_tiler.tiles:
             output = np.where(tile.mask > 0, tile.output, np.nan)

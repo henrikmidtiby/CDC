@@ -6,7 +6,6 @@ from typing import Any
 
 import numpy as np
 import pytest
-from numpy.typing import NDArray
 
 from CDC.color_models import GaussianMixtureModelDistance, MahalanobisDistance, ReferencePixels
 
@@ -66,8 +65,8 @@ class TestReferencePixels(unittest.TestCase):
         self.monkeypatch = pytest.MonkeyPatch()
 
     def test_reference_pixels(self) -> None:
-        def get_mock_load_image(mask_to_use_as_test: NDArray[Any]) -> Callable[[Any, Any, Any, Any], Any]:
-            def mock_load_image(self: Any, file_name: pathlib.Path, *args: Any, **kwargs: Any) -> NDArray[Any] | None:
+        def get_mock_load_image(mask_to_use_as_test: np.ndarray) -> Callable[[Any, Any, Any, Any], Any]:
+            def mock_load_image(self: Any, file_name: pathlib.Path, *args: Any, **kwargs: Any) -> np.ndarray | None:
                 if file_name == pathlib.Path("reference"):
                     return test_reference_pixel_image
                 elif file_name == pathlib.Path("annotated"):

@@ -4,11 +4,9 @@ from __future__ import annotations
 
 import os
 import pathlib
-from typing import Any
 
 import numpy as np
 import rasterio
-from numpy.typing import NDArray
 from rasterio.enums import Resampling
 from rasterio.windows import Window
 
@@ -118,12 +116,12 @@ class Tile:
         r2 = r1 + self.window.height
         return c1, c2, r1, r2
 
-    def get_window_pixels(self, image: NDArray[Any]) -> NDArray[Any]:
+    def get_window_pixels(self, image: np.ndarray) -> np.ndarray:
         """Get pixels from tile without overlap."""
         c1, c2, r1, r2 = self.get_window_pixels_boundary()
         return image[:, r1:r2, c1:c2]
 
-    def read_tile(self, with_overlap: bool = True) -> NDArray[Any]:
+    def read_tile(self, with_overlap: bool = True) -> tuple[np.ndarray, np.ndarray]:
         """
         Read the tiles image data from the orthomosaic.
         If with_overlap is true a window with a border around the tile is used.
@@ -133,14 +131,14 @@ class Tile:
         else:
             window = self.window
         with rasterio.open(self.orthomosaic) as src:
-            img: NDArray[Any] = src.read(window=window)
-            mask = src.read_masks(window=window)
+            img: np.ndarray = src.read(window=window)
+            mask: np.ndarray = src.read_masks(window=window)
             self.mask = mask[0]
             for band in range(mask.shape[0]):
                 self.mask = self.mask & mask[band]
         return img, mask
 
-    def save_tile(self, image: NDArray[Any], mask: NDArray[Any], output_tile_location: pathlib.Path) -> None:
+    def save_tile(self, image: np.ndarray, mask: np.ndarray, output_tile_location: pathlib.Path) -> None:
         """Save the image of the tile to a tiff file. Filename is the tile number."""
         self.output = image
         if not output_tile_location.is_dir():

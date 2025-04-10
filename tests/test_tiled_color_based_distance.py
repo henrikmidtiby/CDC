@@ -5,7 +5,6 @@ from typing import Any
 import numpy as np
 import pytest
 from numpy.random import default_rng
-from numpy.typing import NDArray
 from rasterio.windows import Window
 
 from CDC.orthomosaic_tiler import OrthomosaicTiles, Tile
@@ -21,7 +20,7 @@ test_uint8_image_csa = np.minimum(np.abs(5 * test_uint8_image), 255)
 
 
 class ColorModel:
-    def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
+    def calculate_distance(self, image: np.ndarray) -> np.ndarray:
         return image
 
 
@@ -65,7 +64,7 @@ class TestTiledColorSegmenter(unittest.TestCase):
             rows = 4000
             return columns, rows
 
-        def mock_read_tile(self: Any, *args: Any, **kwargs: dict[str, Any]) -> NDArray[Any]:
+        def mock_read_tile(self: Any, *args: Any, **kwargs: dict[str, Any]) -> tuple[np.ndarray, np.ndarray]:
             return test_uint8_image, np.ones((1, *test_uint8_image.shape[1:]))
 
         ortho_tiler_args = {

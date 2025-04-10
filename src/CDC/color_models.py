@@ -9,7 +9,6 @@ from typing import Any
 
 import numpy as np
 import rasterio
-from numpy.typing import NDArray
 from sklearn import mixture
 
 from CDC.transforms import BaseTransform
@@ -29,14 +28,14 @@ class ReferencePixels:
     """
 
     def __init__(self, *, reference: pathlib.Path, annotated: pathlib.Path):
-        self.values: NDArray[Any] = np.zeros(0)
+        self.values: np.ndarray = np.zeros(0)
         """The reference pixel values."""
         ref_image = self.load_image(reference)
         mask_image = self.load_image(annotated)
         self.generate_pixel_values(ref_image, mask_image)
 
     @staticmethod
-    def load_image(file_name: pathlib.Path) -> NDArray[Any]:
+    def load_image(file_name: pathlib.Path) -> np.ndarray:
         """Load image from file."""
         try:
             with rasterio.open(file_name) as img:
@@ -46,8 +45,8 @@ class ReferencePixels:
 
     def generate_pixel_values(
         self,
-        ref_image: NDArray[Any],
-        mask_image: NDArray[Any],
+        ref_image: np.ndarray,
+        mask_image: np.ndarray,
         lower_range: tuple[int, int, int] = (245, 0, 0),
         higher_range: tuple[int, int, int] = (256, 10, 10),
     ) -> None:
@@ -100,19 +99,19 @@ class BaseDistance(ABC):
     def __init__(
         self,
         *,
-        reference_pixels: NDArray[Any],
+        reference_pixels: np.ndarray,
         bands_to_use: tuple[int, ...] | list[int] | None = None,
         transform: BaseTransform | None = None,
     ):
-        self.color_values: NDArray[Any] = reference_pixels
+        self.color_values: np.ndarray = reference_pixels
         """Reference pixel values"""
         self.bands_to_use: tuple[int, ...] | list[int] | None = bands_to_use
         self.transform: BaseTransform | None = transform
-        self.color_values_raw: NDArray[Any] | None = None
+        self.color_values_raw: np.ndarray | None = None
         """Raw pixel values as reference"""
-        self.color_values_transformed: NDArray[Any] | None = None
+        self.color_values_transformed: np.ndarray | None = None
         """Transformed reference pixel values"""
-        self.covariance: NDArray[Any] | None = None
+        self.covariance: np.ndarray | None = None
         """Covariance of the reference pixels."""
         self.average: float | None = None
         """Average of the reference pixels."""
@@ -146,7 +145,7 @@ class BaseDistance(ABC):
     def from_pixel_values(
         cls,
         *,
-        pixel_values: NDArray[Any],
+        pixel_values: np.ndarray,
         bands_to_use: tuple[int, ...] | list[int] | None = None,
         alpha_channel: int | None = -1,
         transform: BaseTransform | None = None,
@@ -181,12 +180,12 @@ class BaseDistance(ABC):
                 raise ValueError(f"Bands have to be between 0 and {number_of_bands - 1}, but got {band}.")
 
     @staticmethod
-    def _is_int(array: NDArray[Any]) -> bool:
+    def _is_int(array: np.ndarray) -> bool:
         diff = np.abs(array - array.astype(int))
         return bool(np.all(diff < 1e-10))
 
     def save_pixel_values_to_file(
-        self, filename: pathlib.Path, values: NDArray[Any], header: str | None = None, raw: bool = True
+        self, filename: pathlib.Path, values: np.ndarray, header: str | None = None, raw: bool = True
     ) -> None:
         """Save pixel values to csv file with tab delimiter."""
         output_directory = os.path.dirname(filename)
@@ -234,7 +233,7 @@ class BaseDistance(ABC):
         pass
 
     @abstractmethod
-    def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
+    def calculate_distance(self, image: np.ndarray) -> np.ndarray:
         """Calculate the color distance for each pixel in the image to the reference.
         Subclasses must implement this and call super() as the first thing to apply band selection and transforms.
         """
@@ -259,10 +258,10 @@ class MahalanobisDistance(BaseDistance):
 
     def calculate_statistics(self) -> None:
         """Calculate covariance and average."""
-        self.covariance: NDArray[Any] = np.cov(self.color_values)
+        self.covariance: np.ndarray = np.cov(self.color_values)
         self.average = np.average(self.color_values, axis=1)
 
-    def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
+    def calculate_distance(self, image: np.ndarray) -> np.ndarray:
         """
         Calculate the color distance using mahalanobis
         for each pixel in the image to the reference.
@@ -300,7 +299,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         self,
         *,
         n_components: int,
-        reference_pixels: NDArray[Any],
+        reference_pixels: np.ndarray,
         bands_to_use: tuple[int, ...] | list[int] | None = None,
         transform: BaseTransform | None = None,
     ):
@@ -334,7 +333,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         cls,
         *,
         n_components: int,
-        pixel_values: NDArray[Any],
+        pixel_values: np.ndarray,
         bands_to_use: tuple[int, ...] | list[int] | None = None,
         alpha_channel: int | None = -1,
         transform: BaseTransform | None = None,
@@ -357,7 +356,7 @@ class GaussianMixtureModelDistance(BaseDistance):
         self.covariance = self.gmm.covariances_
         self.max_score = np.max(self.gmm.score_samples(self.color_values.transpose()))
 
-    def calculate_distance(self, image: NDArray[Any]) -> NDArray[Any]:
+    def calculate_distance(self, image: np.ndarray) -> np.ndarray:
         """
         Calculate the color distance using a gaussian mixture model
         for each pixel in the image to the reference.

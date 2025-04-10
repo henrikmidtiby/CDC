@@ -1,10 +1,8 @@
 import unittest
-from typing import Any
 
 import numpy as np
 import pytest
 from numpy.random import default_rng
-from numpy.typing import NDArray
 
 from CDC.transforms import GammaTransform, LambdaTransform
 
@@ -28,11 +26,11 @@ class TestTransformers(unittest.TestCase):
         np.testing.assert_equal(GammaTransform(0.6).transform(test_uint8_image), test_uint8_image**0.6)
 
     def test_lambda(self) -> None:
-        def lambda_test_func(image: NDArray[Any]) -> NDArray[Any]:
-            new_image: NDArray[Any] = image / np.min(image)
+        def lambda_test_func(image: np.ndarray) -> np.ndarray:
+            new_image: np.ndarray = image / np.min(image)
             return new_image
 
-        def lambda_test_wrong_params_func(image: NDArray[Any], power: float) -> NDArray[Any]:
+        def lambda_test_wrong_params_func(image: np.ndarray, power: float) -> np.ndarray:
             return image**power
 
         # test Exceptions
