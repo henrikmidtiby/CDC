@@ -52,10 +52,10 @@ class Tile:
         self.tile_number = number
         """The tile number. Useful for identification."""
         windows = self.set_tile_data_from_orthomosaic()
-        self.window = windows[0]
-        """Window: Window specifying the region of the orthomosaic for this tile."""
-        self.window_with_overlap = windows[1]
-        """Window: Window specifying the region of the orthomosaic for this tile with overlap of neighboring tiles."""
+        self.window: Window = windows[0]
+        """Window specifying the region of the orthomosaic for this tile."""
+        self.window_with_overlap: Window = windows[1]
+        """Window specifying the region of the orthomosaic for this tile with overlap of neighboring tiles."""
 
     def set_tile_data_from_orthomosaic(self) -> tuple[Window, Window]:
         """Read data about the tile from the orthomosaic."""

@@ -1,6 +1,6 @@
 {{ name | escape | underline}}
 
-Qualified name: ``{{ fullname | escape }}``
+Qualified name: ``{{ fullname }}``
 
 .. currentmodule:: {{ module }}
 
@@ -9,7 +9,6 @@ Qualified name: ``{{ fullname | escape }}``
    :members:
    :private-members:
    :inherited-members:
-
 
    {% block methods %}
    {%- if methods %}
