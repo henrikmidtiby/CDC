@@ -27,31 +27,33 @@ test_image = np.array(
         [[20, 30, 80], [50, 70, 10], [60, 80, 40]],
     ]
 )
-test_reference_pixels_values = np.array([[5, 20, 99], [5, 20, 100], [5, 19, 101]])
+test_reference_pixels_values = np.array(
+    [[5, 4, 6, 4, 5, 2, 3, 4, 5], [20, 20, 19, 21, 22, 19, 18, 20, 23], [100, 102, 101, 102, 99, 100, 102, 103, 98]]
+)
 test_mahal_res = np.array(
     [
         [
-            [61938065.050973, 72271206.423611, 54644082.905849],
-            [41636481.413178, 4072473.365251, 55373481.120433],
-            [12703685.569828, 30817074.564124, 83212179.641626],
+            [93.193112, 80.627193, 41.259647],
+            [54.811516, 24.263431, 69.05152],
+            [40.792615, 39.95395, 40.928231],
         ]
     ]
 )
 test_gmm_1_res = np.array(
     [
         [
-            [21646.328248, 25257.42584, 19097.247623],
-            [14551.219067, 1425.097135, 19352.218935],
-            [4439.704449, 10770.032736, 29081.097011],
+            [69.8948, 60.470358, 30.944715],
+            [41.108612, 18.197564, 51.78863],
+            [30.594453, 29.965454, 30.696166],
         ]
     ]
 )
 test_gmm_2_res = np.array(
     [
         [
-            [38825.14226, 25277.867646, 41555.941845],
-            [23307.65775, 33230.944602, 43765.753882],
-            [7013.367596, 19791.385623, 30779.979361],
+            [483.328057, 346.073752, 166.68573],
+            [225.52157, 93.11944, 344.481349],
+            [191.881656, 120.500857, 91.544811],
         ]
     ]
 )
@@ -166,6 +168,8 @@ class TestColorModels(unittest.TestCase):
             mp.setattr(ReferencePixels, "__init__", mock_reference_pixels_init)
             # test Mahalanobis distance calculations
             md = MahalanobisDistance(bands_to_use=[0, 1, 2])
+            print(np.linalg.det(md.calculate_distance(test_image)))
+            print(np.linalg.eig(md.calculate_distance(test_image)))
             np.testing.assert_almost_equal(md.calculate_distance(test_image), test_mahal_res, decimal=6)
             # test Gaussian Mixture Model distance calculations with 1 cluster
             gmmd1 = GaussianMixtureModelDistance(bands_to_use=[0, 1, 2], n_components=1)
