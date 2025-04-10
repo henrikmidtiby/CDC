@@ -3,11 +3,13 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+from __future__ import annotations
+
 import os
 import sys
 from datetime import datetime
 
-import CDC  # noqa: F401 #
+import CDC
 
 sys.path.insert(0, os.path.abspath("."))
 
@@ -25,10 +27,11 @@ release = CDC.__version__
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    "sphinx.ext.napoleon",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
-    "sphinx.ext.napoleon",
     "myst_parser",
     "sphinx_copybutton",
     "sphinx_reredirects",
@@ -38,11 +41,16 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns: list[str] = []
 
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "rasterio": ("https://rasterio.readthedocs.io/en/stable", None),
+    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+}
+
 # Automatically generate stub pages when using the .. autosummary directive
 autosummary_generate = True
-
+# autodoc_typehints_format = "fully-qualified"
 autodoc_typehints = "description"
-autodoc_type_aliases = {"NDArray": "NDArray"}
 autoclass_content = "both"
 autodoc_member_order = "groupwise"
 
