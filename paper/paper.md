@@ -22,7 +22,7 @@ authors:
 affiliations:
   - index: 1
     name: The Mærsk Mc-Kinney Møller Institute, University of Southern Denmark
-date: 30 January 2025
+date: 21 April 2025
 bibliography: paper.bib
 ---
 
@@ -35,9 +35,10 @@ It is specifically tailored for handling large orthomosaics and multispectral da
 By providing CDC with reference pixels, it calculates the distance using
 either the Mahalanobis distance or a Gaussian Mixture Model for all pixels
 in the orthomosaic.
-Figure \ref{pumpkins} shows a small section of a pumpkin field and the corresponding color distance image.
+Figure \ref{pumpkins} shows a small section of a pumpkin field and the
+calculated color distance image.
 CDC's main functions are exposed through a command-line interface, where
-providing an orthomosaic, reference image, and a mask will output a new
+providing an orthomosaic, a reference image, and a mask will output a new
 orthomosaic with the color distances.
 The Python package also allows for using CDC as a library for more complex tasks.
 
@@ -50,7 +51,9 @@ A common task in Precision Agriculture is to segment an orthomosaic into
 different regions based on the information in the orthomosaic.
 The regions can represent areas with healthy vegetation or areas with
 unwanted vegetation.
-The classic approach is to use the excess green (ExG) color index to assess
+
+The classic approach is to use the excess green (ExG) [@Woebbecke1995]
+color index to assess
 whether the current pixel is green enough to be considered healthy vegetation.
 Such an approach based on a hardcoded, rule (ExG and a threshold) is only
 suitable for a limited number of cases.
