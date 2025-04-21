@@ -35,7 +35,8 @@ It is specifically tailored for handling large orthomosaics and multispectral da
 By providing CDC with reference pixels, it calculates the distance using
 either the Mahalanobis distance or a Gaussian Mixture Model for all pixels
 in the orthomosaic.
-Figure \ref{pumpkins} shows a small section of a pumpkin field and the
+
+\autoref{fig:pumpkins} shows a small section of a pumpkin field and the
 calculated color distance image.
 CDC's main functions are exposed through a command-line interface, where
 providing an orthomosaic, a reference image, and a mask will output a new
