@@ -77,7 +77,7 @@ class TiledColorBasedDistance:
             overview_factors = src.overviews(src.indexes[0])
             with rasterio.open(output_filename, "w", **profile) as dst:
 
-                def process(tile: Tile) -> None:
+                def process(tile: Tile) -> np.ndarray:
                     with read_lock:
                         img = src.read(window=tile.window_with_overlap)
                         mask_temp = src.read_masks(window=tile.window_with_overlap)
@@ -94,17 +94,26 @@ class TiledColorBasedDistance:
                     with write_lock:
                         dst.write(output, window=tile.window)
                         dst.write_mask(mask, window=tile.window)
+                    masked_output = np.where(mask > 0, output, np.nan)
+                    tile_histogram = self._calculate_tile_statistics(masked_output)
+                    return tile_histogram
 
-                thread_map(process, self.ortho_tiler.tiles, max_workers=max_workers)
+                tile_histograms = thread_map(process, self.ortho_tiler.tiles, max_workers=max_workers)
+
+            self.histogram, self.mean_pixel_value = self._calculate_statistics(tile_histograms)
         with rasterio.open(output_filename, "r+") as dst:
             dst.build_overviews(overview_factors, Resampling.average)
 
-    def _calculate_statistics(self) -> tuple[np.ndarray, float]:
+    def _calculate_tile_statistics(self, image: np.ndarray) -> np.ndarray:
+        if np.max(image) == np.min(image):
+            return np.zeros(256)
+        else:
+            return np.histogram(image, bins=256, range=(0, 255))[0]
+
+    def _calculate_statistics(self, tile_histograms: np.ndarray) -> tuple[np.ndarray, float]:
         image_statistics = np.zeros(256)
-        for tile in self.ortho_tiler.tiles:
-            output = np.where(tile.mask > 0, tile.output, np.nan)
-            if np.max(output) != np.min(output):
-                image_statistics += np.histogram(output, bins=256, range=(0, 255))[0]
+        for histogram in tile_histograms:
+            image_statistics += histogram
         mean_divide = 0
         mean_sum = 0
         for x in range(0, 256):
@@ -118,11 +127,10 @@ class TiledColorBasedDistance:
         Calculate a histogram of the color based distance from all tiles.
         Save histogram in output_location/statistics with a txt file of metadata.
         """
-        histogram, mean_pixel_value = self._calculate_statistics()
         statistics_path = self.output_location.joinpath("statistics")
         print(f'Writing statistics to the folder "{statistics_path}"')
         # Plot histogram of pixel values
-        plt.plot(histogram)
+        plt.plot(self.histogram)
         plt.title("Histogram of pixel values")
         plt.xlabel("Pixel Value")
         plt.ylabel("Number of Pixels")
@@ -148,5 +156,5 @@ class TiledColorBasedDistance:
             f.write(f" - {self.colormodel.average}\n")
             f.write(" - Covariance matrix of the annotated pixels\n")
             f.write(" - " + str(self.colormodel.covariance).replace("\n", "\n   ") + "\n")
-            f.write(f" - Mean pixel value: {mean_pixel_value}\n")
+            f.write(f" - Mean pixel value: {self.mean_pixel_value}\n")
             f.write(f" - Number of tiles: {len(self.ortho_tiler.tiles)}\n")
