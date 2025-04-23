@@ -7,7 +7,6 @@ import pathlib
 
 import numpy as np
 import rasterio
-from rasterio.enums import Resampling
 from rasterio.windows import Window
 
 
@@ -140,7 +139,6 @@ class Tile:
 
     def save_tile(self, image: np.ndarray, mask: np.ndarray, output_tile_location: pathlib.Path) -> None:
         """Save the image of the tile to a tiff file. Filename is the tile number."""
-        self.output = image
         if not output_tile_location.is_dir():
             os.makedirs(output_tile_location)
         output_tile_filename = output_tile_location.joinpath(f"{self.tile_number:05d}.tiff")
@@ -271,22 +269,3 @@ class OrthomosaicTiles:
                     )
                 )
         return tiles
-
-    def save_orthomosaic_from_tile_output(self, orthomosaic_filename: pathlib.Path) -> None:
-        """Save an orthomosaic from the processed tiles."""
-        if not orthomosaic_filename.parent.exists():
-            orthomosaic_filename.parent.mkdir(parents=True)
-        output_count = self.tiles[0].output.shape[0]
-        with rasterio.open(self.orthomosaic) as src:
-            profile = src.profile
-            profile["count"] = output_count
-            overview_factors = src.overviews(src.indexes[0])
-        with rasterio.open(orthomosaic_filename, "w", **profile) as dst:
-            for tile in self.tiles:
-                output = tile.get_window_pixels(tile.output)
-                dst.write(output, window=tile.window)
-                if output_count == 1:
-                    mask = tile.get_window_pixels(tile.mask)
-                    dst.write_mask(mask, window=tile.window)
-        with rasterio.open(orthomosaic_filename, "r+") as dst:
-            dst.build_overviews(overview_factors, Resampling.average)
