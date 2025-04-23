@@ -26,7 +26,7 @@ class TestArgsParser(unittest.TestCase):
         assert parser.output_location == pathlib.Path("output")
         assert parser.method == "mahalanobis"
         assert parser.param == 2
-        assert parser.tile_size == 3000
+        assert parser.tile_size == [2048]
         assert parser.run_specific_tile is None
         assert parser.run_specific_tileset is None
         assert parser.gamma_transform is None
@@ -78,7 +78,7 @@ class TestArgsParser(unittest.TestCase):
         assert parser.output_location == pathlib.Path("/test/home/output")
         assert parser.method == "gmm"
         assert parser.param == 5
-        assert parser.tile_size == 1000
+        assert parser.tile_size == [1000]
         assert parser.run_specific_tile == [16, 65]
         assert parser.run_specific_tileset == [16, 65]
         assert parser.gamma_transform == 0.5

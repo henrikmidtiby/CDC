@@ -125,9 +125,10 @@ def _get_parser() -> argparse.ArgumentParser:
     tile_group = parser.add_argument_group("Tiles")
     tile_group.add_argument(
         "--tile_size",
-        default=3000,
+        default=[2048],
+        nargs="+",
         type=int,
-        help="The height and width of tiles that are analyzed. Default is 3000.",
+        help="The width and height of tiles that are analyzed. If one integer is given tiles are square. Default is (2048, 2048).",
     )
     tile_group.add_argument(
         "--tile_overlap",
@@ -199,6 +200,12 @@ def _process_color_model_args(args: Any, keyword_args: dict[str, Any]) -> BaseDi
 
 def _main() -> None:
     args = _parse_args()
+    if len(args.tile_size) == 1:
+        tile_size = args.tile_size[0]
+    elif len(args.tile_size) == 2:
+        tile_size = tuple(args.tile_size)
+    else:
+        raise Exception("Tiles size must be 1 or 2 integers.")
     keyword_args = vars(args)
     keyword_args.update(_process_transform_args(args))
     _create_output_location(args.output_location)
@@ -206,7 +213,7 @@ def _main() -> None:
         color_model = _process_color_model_args(args, keyword_args)
         ortho_tiler = OrthomosaicTiles(
             orthomosaic=args.orthomosaic,
-            tile_size=args.tile_size,
+            tile_size=tile_size,
             overlap=args.tile_overlap,
             run_specific_tile=args.run_specific_tile,
             run_specific_tileset=args.run_specific_tileset,
