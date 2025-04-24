@@ -33,7 +33,8 @@ package designed to calculate a color distance image, a gray scale image
 with color distances from all pixels in the input image to a reference color.
 It is specifically tailored for handling large orthomosaics and multispectral data.
 By providing CDC with reference pixels, it calculates the distance using
-either the Mahalanobis distance or a Gaussian Mixture Model for all pixels
+either the Mahalanobis distance [@MahalanobisDistance] or a
+Gaussian Mixture Model for all pixels
 in the orthomosaic.
 
 \autoref{fig:pumpkins} shows a small section of a pumpkin field and the
@@ -112,7 +113,8 @@ $$
 
 where $\vec{x}$ is the color value, $\vec{\mu}$ the mean color value and $S$ the covariance matrix.
 The parameters $\vec{\mu}$ and $S$ are determined from a set of training pixels.
-
+If the color value distribution have multiple peaks, it can be beneficial to use the
+Gaussian Mixture Model from the Scikit Learn [@scikit-learn] python package.
 
 # Acknowledgements
 
