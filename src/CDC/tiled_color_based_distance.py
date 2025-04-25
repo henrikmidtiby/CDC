@@ -90,7 +90,7 @@ class TiledColorBasedDistance:
                     output = tile.get_window_pixels(distance)
                     mask = tile.get_window_pixels(np.expand_dims(mask, 0)).squeeze()
                     if save_tiles:
-                        tile.save_tile(distance, mask, self.output_location)
+                        tile.save_tile(distance, mask, self.output_location.joinpath("tiles"))
                     with write_lock:
                         dst.write(output, window=tile.window)
                         dst.write_mask(mask, window=tile.window)
@@ -100,7 +100,7 @@ class TiledColorBasedDistance:
 
                 tile_histograms = thread_map(process, self.ortho_tiler.tiles, max_workers=max_workers)
 
-            self.histogram, self.mean_pixel_value = self._calculate_statistics(tile_histograms)
+        self.histogram, self.mean_pixel_value = self._calculate_statistics(tile_histograms)
         with rasterio.open(output_filename, "r+") as dst:
             dst.build_overviews(overview_factors, Resampling.average)
 
