@@ -1,5 +1,5 @@
 ---
-title: 'CDC: Color Distance Calculator'
+title: 'CDC: a Python package for Color Distance Calculations'
 Tags:
   - Python
   - Computer Vision
