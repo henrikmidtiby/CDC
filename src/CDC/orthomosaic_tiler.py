@@ -71,11 +71,18 @@ class Tile:
                 self.transform = src.window_transform(window_with_overlap)
         except rasterio.RasterioIOError as e:
             raise OSError(f"Could not open the orthomosaic at '{self.orthomosaic}'") from e
+        self._determine_ulc(left, top)
+        return window, window_with_overlap
+
+    def _determine_ulc(self, left: float, top: float) -> None:
         self.ulc_global = [
             left + (self.ulc[0] * self.resolution[0]),
             top - (self.ulc[1] * self.resolution[1]),
         ]
-        return window, window_with_overlap
+        if self.tile_position[0] > 0:
+            self.ulc_global[0] = left + ((self.ulc[0] - self.size[0] * self.overlap) * self.resolution[0])
+        if self.tile_position[1] > 0:
+            self.ulc_global[1] = top - ((self.ulc[1] - self.size[1] * self.overlap) * self.resolution[1])
 
     def _get_window(self, overlap: float) -> Window:
         pixel_overlap_width = int(self.size[0] * overlap)
