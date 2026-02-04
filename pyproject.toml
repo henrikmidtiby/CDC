@@ -20,7 +20,7 @@ dependencies = [
   "matplotlib",
   "numpy",
   "rasterio",
-  "scikit-learn",
+  "scikit-learn>=1.7.0",
   "tqdm",
 ]
 classifiers = [
