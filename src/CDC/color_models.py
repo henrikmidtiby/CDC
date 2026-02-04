@@ -178,6 +178,10 @@ class BaseDistance(ABC):
         for band in self.bands_to_use:
             if band < 0 or band > number_of_bands - 1:
                 raise ValueError(f"Bands have to be between 0 and {number_of_bands - 1}, but got {band}.")
+        if len(self.bands_to_use) < 2:
+            raise ValueError(
+                f"Needs more then 1 band. Got {len(self.bands_to_use)} band, band list: {self.bands_to_use}"
+            )
 
     @staticmethod
     def _is_int(array: np.ndarray) -> bool:
