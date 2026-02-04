@@ -13,4 +13,4 @@ warnings.filterwarnings("error")
 warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 
 # Current version
-__version__ = "1.1.3"
+__version__ = "1.1.4"
